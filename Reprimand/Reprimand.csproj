@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../../../Celeste.dll')">../../..</CelestePrefix>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<RefCopyBlacklist>;MonoMod.Utils;MonoMod.Backports;System.Diagnostics.DiagnosticSource;MonoMod.Patcher;Mono.Cecil;Mono.Cecil.Mdb;Mono.Cecil.Pdb;</RefCopyBlacklist>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.1" PrivateAssets="all" ExcludeAssets="runtime" />
+		<PackageReference Include="MonoMod.Patcher" Version="25.0.0-prerelease.2" Private="false" />
+		<PackageReference Include="CelesteAnalyzer" Version="*" Private="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CelesteMod.Publicizer" Version="*" CelesteAssembly="$(CelestePrefix)/Celeste.dll" />
+		<Reference Include="$(CelestePrefix)/MMHOOK_Celeste.dll" Private="false" />
+		<Reference Include="$(CelestePrefix)/FNA.dll" Private="false" />
+	</ItemGroup>
+
+	<Target Name="CopyFiles" AfterTargets="Build">
+		<ItemGroup>
+			<RefsToCopy Include="@(ReferenceCopyLocalPaths)" />
+			<RefsToCopy Remove="@(RefsToCopy)" Condition="$([System.String]::Copy('$(RefCopyBlacklist)').Contains(';%(RefsToCopy.Filename);'))" />
+		</ItemGroup>
+		<Copy SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="../Bin" />
+		<Copy SourceFiles="$(OutputPath)/$(AssemblyName).pdb" DestinationFolder="../Bin" />
+		<Copy SourceFiles="@(RefsToCopy)" DestinationFolder="../Bin" SkipUnchangedFiles="true" />
+	</Target>
+</Project>

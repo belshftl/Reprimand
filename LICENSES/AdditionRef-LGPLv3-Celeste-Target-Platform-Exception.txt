@@ -1,0 +1,271 @@
+Celeste Target Platform Exception to GNU LGPLv3
+
+This exception is an additional permission under section 7 of the GNU General
+Public License, version 3 ("GPLv3"), as incorporated into the GNU Lesser General
+Public License, version 3 ("LGPLv3"). It applies to the Library when a notice
+authorized by the Library's copyright holders states that the Library is
+governed by LGPLv3 along with this exception.
+
+Capitalized terms not defined by this exception have the meanings assigned to
+them by LGPLv3 or by GPLv3 as incorporated into LGPLv3.
+
+Definitions:
+
+"Canonical Everest Project" means the software project identified, as of
+2026-06-19, by stable release v1.6314.0, published under tag stable-1.6314.0,
+then published at https://github.com/EverestAPI/Everest. As of 2026-06-19, the
+fully peeled tag identified commit a3112074ae83766af9f8cf48295689bbd8166730
+using the repository's SHA-1 object format. The URL cited above is provided
+solely as historical identifying information and need not remain available or
+unchanged. The cited release, tag, repository, and commit identify the
+continuing project and do not limit this definition to that release or
+repository state. The term includes later official releases of that project.
+
+The term also includes any project expressly and publicly designated as an
+official successor by either:
+
+(a) the persons who, immediately before the designation, were authorized under
+    the then-current governance of a project already included in this definition
+    to publish that project's official releases; or
+(b) a publicly documented governance process established by a project already
+    included in this definition before the designation.
+
+A designation must identify the designated project and the date on which the
+designation takes effect, and must be published in a reasonably permanent public
+record. A designation does not remove any project already included in this
+definition.
+
+A fork, continuation, or other project does not become a Canonical Everest
+Project merely by retaining the project's name, code, history, contributors, or
+interfaces, or by claiming to be its successor.
+
+"Everest" means only the code and other components that a Canonical Everest
+Project publishes as, or expressly designates as, constituting or implementing
+its official Mod-loading runtime or an interface intended for use by Mods or
+Mod-development tools.
+
+A file, dependency, tool, library, or other component does not become part of
+Everest solely because it is stored in the Canonical Everest Project's
+repository; included in the same package, release, distribution, or build
+process; present in its dependency graph; or contained in or referenced by
+another repository together with Everest, including as a submodule, subtree,
+vendored copy, or dependency. Such a component is part of Everest only if it
+independently satisfies the preceding definition.
+
+"Mod" means a package, plugin, extension, add-on, or other similar work intended
+to be loaded and run by Everest using its Mod-loading mechanisms.
+
+"Third-Party Platform Component" means a third-party engine, middleware, SDK,
+API, runtime library, tool, service, asset, asset format implementation,
+importer, or related tooling that is expressly identified as required for game
+functionality, Mod-loading functionality, or Mod-development functionality:
+
+(a) by or on behalf of the authorized publisher or copyright holder of Celeste,
+    in materials distributed with Celeste or in official public documentation;
+    or
+(b) by a Canonical Everest Project, in official release metadata or official
+    public documentation.
+
+Third-Party Platform Components do not include general-purpose operating system
+components, system libraries, device drivers, hardware interfaces, generally
+available implementations of language runtimes, or generally available
+development tools.
+
+"Target Platform" means:
+
+1. Celeste and its assemblies, executable code, metadata, APIs, assets, and
+   runtime components distributed by or on behalf of its authorized publisher as
+   part of Celeste or expressly for official use with Celeste;
+2. Everest;
+3. any tool or framework, including MonoMod and Mono.Cecil, but only if and to
+   the extent that the Canonical Everest Project expressly identifies that tool
+   or framework in official release metadata or official public documentation as
+   part of providing patching, detouring, reflection, instrumentation, assembly
+   rewriting, or runtime-modification facilities for Mods;
+4. SDK, import-library, stub, stripped, metadata-only, or interface-only forms
+   of the components above; and
+5. with respect to a particular Combined Work, Third-Party Platform Components,
+   but only insofar as that Combined Work uses that component to Interoperate
+   with one or more components described in items 1 through 4.
+
+A portion of a work is not treated as a component of the Target Platform to the
+extent that the portion itself constitutes part of the Library, the Linked
+Version, or another covered work based on the Library. Combining, packaging, or
+distributing such a portion with a Target Platform component does not cause that
+portion to become part of the Target Platform.
+
+"Interoperate" means, with respect to two or more components, to communicate
+with, call into, be called by, reference, inspect, patch, hook, subscribe to
+events from, replace or alter behavior in, extend, load into, be loaded by, or
+otherwise use interfaces, metadata, code, runtime behavior, events, entry
+points, symbols, types, members, assets, files, or services of one component
+from another component.
+
+"Platform Constraint" means a restriction, omission, inability, obstruction, or
+technical failure relevant to a permission granted by this exception.
+
+A Platform Constraint is "attributable solely to the Target Platform" only to
+the extent that:
+
+(a) it results from technical behavior inherent in one or more components of the
+    Target Platform, or from terms that, in the relevant respect, govern access
+    to or use of only one or more components of the Target Platform;
+(b) in the absence of that behavior or those terms, the Platform Constraint
+    would not arise in substantially the same form or to substantially the same
+    extent; and
+(c) neither the Library, the Linked Version, nor any non-Target-Platform portion
+    of the Application or Combined Work independently imposes the same
+    restriction or would independently cause substantially the same omission,
+    inability, obstruction, or failure.
+
+No additional permission applies to the extent that you, a person acting at your
+direction, or a person knowingly cooperating with you for that purpose caused or
+substantially increased a Platform Constraint for the purpose of avoiding a
+requirement of LGPLv3 section 4.
+
+Grant and Scope of Additional Permission:
+
+When you convey a Combined Work that is itself a Mod for Celeste, or a Combined
+Work that Interoperates with the Target Platform for the purpose of developing,
+compiling, installing, loading, running, testing, or distributing Mods for
+Celeste, the following additional permissions apply. Except as expressly
+provided below, LGPLv3 section 4 continues to apply.
+
+For purposes of the introductory paragraph of LGPLv3 section 4, a restriction
+arising from terms independently governing only a Target Platform component
+shall be disregarded to the extent that its relevant effect is a Platform
+Constraint attributable solely to the Target Platform.
+
+No term imposed by you, or governing the Library, the Linked Version, or a
+non-Target-Platform portion of the Application or Combined Work, is disregarded
+under the preceding paragraph.
+
+The preceding paragraphs affect only the introductory paragraph of LGPLv3
+section 4. They do not excuse any failure to satisfy sections 4(a) through 4(e),
+except as expressly provided below.
+
+For purposes of LGPLv3 section 4(c), an execution-time display or collection of
+copyright notices shall be disregarded in determining whether the Combined Work
+displays copyright notices during execution if the contents and presentation of
+that display or collection are controlled solely by one or more Target Platform
+components.
+
+The preceding permission does not apply if a non-Target-Platform portion of the
+Application or Combined Work can add the Library's copyright notice and the
+required license reference to that display or collection through an interface,
+extension point, or configuration facility that the Target Platform ordinarily
+provides for adding notices or other content to that display or collection.
+
+The mere technical possibility of producing the same or a similar result does
+not constitute such an ability. In particular, no such ability arises solely
+from the possibility of modifying or replacing a Target Platform component;
+altering its executable code, memory, data, assets, files, or stored resources;
+using a general-purpose patching, hooking, interception, rewriting, rendering,
+or overlay mechanism; exercising elevated operating-system, kernel, device, or
+hardware privileges; circumventing a technical measure; or superimposing a
+separate display.
+
+The preceding paragraph applies even if the Target Platform ordinarily makes
+the general-purpose mechanism available for use by Mods or Mod-development
+tools, unless that mechanism includes a facility ordinarily intended for adding
+content to the relevant display or collection.
+
+The additional permission concerning LGPLv3 section 4(c) applies only if each
+conveyed copy of the Combined Work is accompanied by a readily accessible
+notice containing the Library's copyright notice and a reference directing the
+recipient to the accompanying copies of GPLv3 and LGPLv3.
+
+For purposes of satisfying LGPLv3 section 4(d)(0), you may omit material from
+the Corresponding Application Code only if all of the following conditions
+are met:
+
+1. Considered in isolation, the omitted material itself constitutes all or part
+   of a component of the Target Platform.
+2. In the form conveyed, supplied, or made available under item 3, the omitted
+   material is technically suitable for use with the Minimal Corresponding
+   Source and the remaining Corresponding Application Code to enable the
+   recipient to recombine or relink the Application with a modified version of
+   the Linked Version and produce a modified Combined Work, disregarding only
+   a Platform Constraint attributable solely to the Target Platform.
+3. One of the following applies:
+   (a) the omitted material is conveyed as part of the Combined Work;
+   (b) the omitted material is supplied separately to the recipient as part of
+       the Target Platform no later than the conveyance of the Combined Work; or
+   (c) when the Combined Work is conveyed, the omitted material is available for
+       lawful acquisition or access by the recipient through the Target
+       Platform's normal means of distribution, either in the form used by the
+       Combined Work or in another form technically suitable for the
+       same purposes.
+
+When item (3)(b) or (3)(c) is relied upon, the conveyed material must include
+information reasonably sufficient to identify the omitted material, including
+its required version, form, configuration, or access method, and the normal
+means by which the recipient may obtain or access it.
+
+No material is excluded merely because it is specific to, generated from,
+distributed with, or used with a component of the Target Platform. To be
+excluded, the material must itself constitute all or part of a component of the
+Target Platform.
+
+For material excluded under the preceding permission, section 4(d)(0) does not
+require the recipient to be able to modify or replace the relevant Target
+Platform component, or to circumvent a restriction or technical measure
+governing only that component. This paragraph does not excuse any restriction,
+omission, or technical failure governing or contained in the Library, the Linked
+Version, or any non-Target-Platform portion of the Application or Combined Work.
+
+If the conditions above are satisfied, the omission of that material, and any
+resulting inability that constitutes a Platform Constraint attributable solely
+to the Target Platform, shall not cause the remaining Corresponding Application
+Code to be unsuitable, or the terms under which it is conveyed insufficient, for
+purposes of LGPLv3 section 4(d)(0).
+
+For purposes of LGPLv3 section 4(d)(1)(b), disregard a failure of the
+shared-library mechanism to operate properly with an interface-compatible
+modified version of the Linked Version, but only to the extent that the failure
+constitutes a Platform Constraint attributable solely to the Target Platform.
+Section 4(d)(1)(a) remains applicable.
+
+For purposes of LGPLv3 section 4(e), you need not provide particular
+Installation Information if all of the following conditions are met:
+
+1. The Installation Information is controlled solely by one or more third
+   parties that are not acting on your behalf and do not control, are not
+   controlled by, and are not under common control with you.
+2. The Installation Information is not in your possession or control.
+3. You cannot lawfully obtain and convey the Installation Information through
+   the exercise of rights or authority available to you.
+4. Its absence prevents installation or execution of the modified Combined
+   Work and results from a Platform Constraint attributable solely to the
+   Target Platform.
+
+A Platform Constraint affecting your ability to obtain or convey Installation
+Information is not attributable solely to the Target Platform to the extent
+that the inability results from an obligation voluntarily accepted by you with
+knowledge that the obligation would prevent compliance with LGPLv3 section 4(e),
+except for generally applicable terms constituting the Target Platform's normal
+means of lawful access or distribution.
+
+Except for the exclusions expressly stated above, nothing in this exception
+alters the required form, terms, or manner of conveyance of the Minimal
+Corresponding Source, Corresponding Application Code, or Installation
+Information.
+
+For avoidance of doubt, this exception does not grant permission to copy,
+modify, distribute, sublicense, or relicense any component of the Target
+Platform, except to the extent permitted by that component's own applicable
+license or other legal permission. This includes FMOD, FMOD Studio, FMOD Engine,
+FMOD bank files, and other third-party engines, frameworks, libraries,
+middleware, runtimes, SDKs, APIs, tools, services, assets, or media included in
+or required by Celeste or Everest.
+
+Audio banks, asset bundles, archives, configuration files, data files, media
+files, and other non-code content are not covered works based on the Library
+merely because they are loaded, referenced, generated, packaged, or used by the
+Library. This paragraph does not exclude any material that, based on its actual
+content, independently constitutes a covered work based on the Library.
+
+Except as expressly provided by this exception, LGPLv3, including the terms of
+GPLv3 incorporated into it, continues to govern the Library and covered works
+based on it. When conveying a covered work, you may preserve or remove this
+additional permission as permitted by GPLv3 section 7.
