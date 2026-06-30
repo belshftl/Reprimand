@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,7 +14,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Reprimand.Analyzers.Graphics;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-internal sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
+public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 		Diagnostics.Graphics.SpriteBatchOwnedExternally,
 		Diagnostics.Graphics.NonGlobalSpriteBatchUsage,

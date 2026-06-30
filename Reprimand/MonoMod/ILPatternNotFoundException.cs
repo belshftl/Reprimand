@@ -7,8 +7,8 @@ using System.Globalization;
 namespace Reprimand.MonoMod;
 
 /// <summary>
-/// Represents a direction in which a search for an IL pattern or sequence was performed
-/// or is to be performed.
+/// Represents a direction in which a search for an IL pattern or sequence was performed or is to
+/// be performed.
 /// </summary>
 public enum ILPatternSearchDirection {
 	/// <summary>
@@ -23,8 +23,8 @@ public enum ILPatternSearchDirection {
 }
 
 /// <summary>
-/// Exception thrown when an IL hook's manipulator fails to locate or match a specific
-/// pattern or sequence in the IL of the method being patched.
+/// Exception thrown when an IL hook's manipulator fails to locate or match a specific pattern or
+/// sequence in the IL of the method being patched.
 /// </summary>
 public sealed class ILPatternNotFoundException(
 	string target,
@@ -33,14 +33,12 @@ public sealed class ILPatternNotFoundException(
 	ILPatternSearchDirection searchDirection
 ) : InvalidOperationException(fmt(target, expected, startIndex, searchDirection)) {
 	/// <summary>
-	/// Name of the target method, or a human-readable fallback string if one
-	/// isn't available.
+	/// Name of the target method, or a human-readable fallback string if one isn't available.
 	/// </summary>
 	public string Target { get; } = target;
 
 	/// <summary>
-	/// Short human-readable description of the expected IL pattern that was
-	/// being searched for.
+	/// Human-readable description of the expected IL pattern that was being searched for.
 	/// </summary>
 	public string Expected { get; } = expected;
 

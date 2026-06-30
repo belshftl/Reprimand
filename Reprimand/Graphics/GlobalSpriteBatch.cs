@@ -1,16 +1,17 @@
 // SPDX-FileCopyrightText: 2026 belshftl
 // SPDX-License-Identifier: LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Monocle;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Monocle;
+using MonoMod.RuntimeDetour;
 
 namespace Reprimand.Graphics;
 
@@ -89,13 +90,6 @@ public static class GlobalSpriteBatch {
 	/// <summary>
 	/// The effective parameters of a spritebatch.
 	/// </summary>
-	/// <remarks>
-	/// Null render states are replaced with FNA's normal default states. A default-initialized
-	/// value also represents the default <see cref="SpriteBatch.Begin()"/> parameters.
-	/// </remarks>
-	/// <remarks>
-	/// Initializes a set of spritebatch parameters.
-	/// </remarks>
 	/// <param name="sortMode">
 	/// The order in which submitted sprites are rendered.
 	/// </param>
@@ -118,6 +112,10 @@ public static class GlobalSpriteBatch {
 	/// <param name="transformMatrix">
 	/// The transformation matrix, or <see langword="null"/> for <see cref="Matrix.Identity"/>.
 	/// </param>
+	/// <remarks>
+	/// Null render states are replaced with FNA's normal default states. A default-initialized
+	/// value also represents the default <see cref="SpriteBatch.Begin()"/> parameters.
+	/// </remarks>
 	public readonly struct BatchParameters(
 		SpriteSortMode sortMode = SpriteSortMode.Deferred,
 		BlendState? blendState = null,
