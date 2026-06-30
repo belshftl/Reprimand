@@ -30,8 +30,8 @@ namespace Reprimand.Graphics;
 /// unscoped batch work to happen and then safely resumes the managed batch; see <see cref="Suspend()"/>.
 /// </para>
 /// <para>
-/// This class is not thread safe; all operations must occur on the main game thread, i.e. the one
-/// that owns the <see cref="GraphicsDevice"/>.
+/// This class is not thread safe; all operations must occur on the thread that owns the
+/// <see cref="GraphicsDevice"/>, i.e. the main game thread.
 /// </para>
 /// </remarks>
 public static class GlobalSpriteBatch {
@@ -182,7 +182,7 @@ public static class GlobalSpriteBatch {
 	/// </summary>
 	/// <remarks>
 	/// Scopes must be disposed in reverse creation order. Copies of this value do not share
-	/// disposed state.
+	/// disposed state; disposing a copy throws.
 	/// </remarks>
 	public readonly ref struct BatchScope {
 		private readonly ScopeToken token;
@@ -905,6 +905,7 @@ public static class GlobalSpriteBatch {
 	}
 
 	private static void throwIfManagedOpUnavailable() {
+		ReprimandModule.ThrowIfInactive();
 		if (poisonReason is not null)
 			throw new InvalidOperationException("GlobalSpriteBatch is poisoned by an earlier internal/invariant error, sorry", poisonReason);
 		if (!transitioning)

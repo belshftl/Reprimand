@@ -12,6 +12,8 @@ A bunch of things that a decent mod loader should really be doing, but [Everest]
 ## Current library features
 - a replacement for `ILCursor.Goto{Next,Prev}` with much better match-fail exceptions:
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
+- API to be able to bind the backbuffer without clearing it, even if the `RenderTargetUsage` isn't set to `PreserveContents`
+- a basic Roslyn analyzer
 
 ---
 
@@ -28,14 +30,12 @@ Once the library exits in-dev and switches to major version 1, semver will be us
 ## The TODO corner
 
 Current actively worked-on documentation:
-- none yet, sorry
+- manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 
 Currently actively worked-on library features:
-- a basic Roslyn analyzer
-- some kind of solution for XNA's "swapping to the backbuffer clears it" problem, I think FNA has some sort of flag to preserve the contents, maybe then add some kind of global mod capability-request system so that if any mod wants it then it's enabled but otherwise it's disabled
+- currently none
 
 Planned documentation (roughly in highest-to-lowest priority order but subject to be reordered at any time):
-- manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 - input stack behavior, where 2D axis input is normalized between circle/square, `Check`/`Released` interactions with buffering, buffering edge cases like changing `BufferTime` mid-buffer, whether a press+release within a single frame produces nothing or `Pressed`+`Released`, etc.
 - `EntityData` and entity IDs
 - `Level.Render()` structure, what matrices are applied where, and how/where to render HD elements

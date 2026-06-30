@@ -3,37 +3,40 @@
 
 using Celeste.Mod;
 using System;
+using System.Threading;
 
 namespace Reprimand;
 
-public class ReprimandModule : EverestModule {
-	public const string Name = "Reprimand";
-
-	public static ReprimandModule Instance { get; private set; }
+internal sealed class ReprimandModule : EverestModule {
+	private static ReprimandModule? instanceBacking = null;
+	public static ReprimandModule Instance => Volatile.Read(ref instanceBacking) ?? throw new InvalidOperationException("the module has not been instantiated yet");
+	public volatile bool Active;
 
 	public ReprimandModule() {
-		Instance = this;
+		if (Interlocked.CompareExchange(ref instanceBacking, this, null) is not null)
+			throw new InvalidOperationException("an instance of the module has already been instantiated");
 #if DEBUG
-		Logger.SetLogLevel(Name, LogLevel.Verbose);
+		Logger.SetLogLevel("Reprimand", LogLevel.Verbose);
 #else
-		Logger.SetLogLevel(Name, LogLevel.Info);
+		Logger.SetLogLevel("Reprimand", LogLevel.Info);
 #endif
 	}
 
 	public override void Load() {
 		// TODO something nicer than hardcoding these in
+		Graphics.BackbufferAttachment.RegisterHooks();
 		Graphics.GlobalSpriteBatch.RegisterHooks();
-		//Test.SomeBullshit.RegisterHooks();
-
-		/*
-		Monocle.Engine.Graphics.PreparingDeviceSettings += (s, e) => {
-			e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = Microsoft.Xna.Framework.Graphics.RenderTargetUsage.PreserveContents;
-		};
-		*/
+		Active = true;
 	}
 
 	public override void Unload() {
-		//Test.SomeBullshit.UnregisterHooks();
+		Active = false;
 		Graphics.GlobalSpriteBatch.UnregisterHooks();
+		Graphics.BackbufferAttachment.UnregisterHooks();
+	}
+
+	public static void ThrowIfInactive() {
+		if (!Instance.Active)
+			throw new InvalidOperationException("the library's hooks are either not active yet or already uninstalled; did you forget to declare an Everest dependency on it?");
 	}
 }
