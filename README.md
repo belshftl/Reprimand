@@ -2,16 +2,30 @@
 
 A bunch of things that a decent mod loader should really be doing, but [Everest](https://everestapi.github.io) doesn't for some reason. Includes documentation and a library for code mods, under a combined project name.
 
+**Still in early development!**
+
 ---
 
-**Current documentation**:
+## Current documentation
 - none yet, sorry
 
-**Current library features**:
+## Current library features
 - a replacement for `ILCursor.Goto{Next,Prev}` with much better match-fail exceptions:
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
 
 ---
+
+## Additional info
+
+The library is still in early development, and as such is on major version 0. During this period, API stability will be attempted but is not promised.
+
+Once the library exits in-dev and switches to major version 1, semver will be used as the versioning scheme. API stability will be guaranteed for a given major release, but:
+- Major releases will **not** be developmental landmarks or be special in any way; the major version may be bumped at any time. Attempts will be made to not bump it unless necessary once the early-dev dust settles, but no guarantees.
+- Existing APIs may be marked as deprecated without the major version changing, and then subsequently be removed in the next major release.
+
+---
+
+## The TODO corner
 
 Current actively worked-on documentation:
 - none yet, sorry

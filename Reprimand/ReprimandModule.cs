@@ -23,11 +23,17 @@ public class ReprimandModule : EverestModule {
 	public override void Load() {
 		// TODO something nicer than hardcoding these in
 		Graphics.GlobalSpriteBatch.RegisterHooks();
-		Test.SomeBullshit.RegisterHooks();
+		//Test.SomeBullshit.RegisterHooks();
+
+		/*
+		Monocle.Engine.Graphics.PreparingDeviceSettings += (s, e) => {
+			e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = Microsoft.Xna.Framework.Graphics.RenderTargetUsage.PreserveContents;
+		};
+		*/
 	}
 
 	public override void Unload() {
-		Test.SomeBullshit.UnregisterHooks();
+		//Test.SomeBullshit.UnregisterHooks();
 		Graphics.GlobalSpriteBatch.UnregisterHooks();
 	}
 }

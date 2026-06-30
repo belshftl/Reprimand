@@ -6,6 +6,15 @@
 		<Nullable>enable</Nullable>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
+		<PackageId>Reprimand</PackageId>
+		<Version>0.1.0</Version>
+		<Authors>AtBelshftl</Authors>
+		<Description>a utility library for Celeste mods</Description>
+		<Copyright>Copyright (c) 2026 belshftl</Copyright>
+		<PackageLicenseExpression>LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+
 		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../../../Celeste.dll')">../../..</CelestePrefix>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<RefCopyBlacklist>;MonoMod.Utils;MonoMod.Backports;System.Diagnostics.DiagnosticSource;MonoMod.Patcher;Mono.Cecil;Mono.Cecil.Mdb;Mono.Cecil.Pdb;</RefCopyBlacklist>
