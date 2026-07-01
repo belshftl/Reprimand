@@ -6,6 +6,8 @@ using System.Threading;
 
 using Celeste.Mod;
 
+using Reprimand.Lifecycle;
+
 namespace Reprimand;
 
 internal sealed class ReprimandModule : EverestModule {
@@ -24,16 +26,13 @@ internal sealed class ReprimandModule : EverestModule {
 	}
 
 	public override void Load() {
-		// TODO something nicer than hardcoding these in
-		Graphics.BackbufferAttachment.RegisterHooks();
-		Graphics.GlobalSpriteBatch.RegisterHooks();
+		LifecycleAttrRunner.OnLoad(this);
 		Active = true;
 	}
 
 	public override void Unload() {
 		Active = false;
-		Graphics.GlobalSpriteBatch.UnregisterHooks();
-		Graphics.BackbufferAttachment.UnregisterHooks();
+		LifecycleAttrRunner.OnUnload(this);
 	}
 
 	public static void ThrowIfInactive() {

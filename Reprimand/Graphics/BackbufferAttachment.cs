@@ -8,6 +8,8 @@ using System.Reflection;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
 
+using Reprimand.Lifecycle;
+
 namespace Reprimand.Graphics;
 
 /// <summary>
@@ -92,6 +94,7 @@ public static class BackbufferAttachment {
 	/// </summary>
 	internal static int OverrideDepth => overrideStack.Count;
 
+	[OnLoad]
 	internal static void RegisterHooks() {
 		setRenderTargetsHook = new Hook(
 			typeof(GraphicsDevice).GetMethod(
@@ -107,6 +110,7 @@ public static class BackbufferAttachment {
 		);
 	}
 
+	[OnUnload]
 	internal static void UnregisterHooks() {
 		if (overrideStack.Count != 0)
 			Celeste.Mod.Logger.Log(Celeste.Mod.LogLevel.Warn, "Reprimand/BackbufferAttachment", "unregistering hooks happened while backbuffer attachment overrides are active");

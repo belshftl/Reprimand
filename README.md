@@ -11,6 +11,7 @@ A bunch of things that a decent mod loader should really be doing, but [Everest]
 
 ## Current library features
 - a replacement for `ILCursor.Goto{Next,Prev}` with much better match-fail exceptions
+- the classic `[OnLoad]` and `[OnUnload]` attributes, as well as extra ones like `[OnLoadWithOptionalDep]`
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
 - API to be able to bind the backbuffer without clearing it, even if the `RenderTargetUsage` isn't set to `PreserveContents`
 - a basic Roslyn analyzer
@@ -29,12 +30,15 @@ Once the library exits in-dev and switches to major version 1, semver will be us
 
 ## The TODO corner
 
+Current TODO on existing features:
+- roslyn analyzer for lifecycle attribute methods
+- `[OnUnloadOrExit]` / `[OnUnloadOrExitWithOptionalDep]`
+
 Current actively worked-on documentation:
 - none yet, sorry
 
 Currently actively worked-on library features:
 - adding more features to the roslyn analyzer
-- `[OnLoad]`, `[OnUnload]`, `[OnLoadWithOptionalDep]`, `[OnUnloadWithOptionalDep]`, etc. implemented ~~using roslyn sourcegen~~ In some way
 - some way to soft-enforce "every hook has a detour ID" with the analyzer, it should only warn and not error though
 
 Planned documentation (roughly in highest-to-lowest priority order but subject to be reordered at any time):

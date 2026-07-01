@@ -13,6 +13,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.RuntimeDetour;
 
+using Reprimand.Lifecycle;
+
 namespace Reprimand.Graphics;
 
 /// <summary>
@@ -271,6 +273,7 @@ public static class GlobalSpriteBatch {
 	/// </summary>
 	public static Exception? PoisonReason => poisonReason;
 
+	[OnLoad]
 	internal static void RegisterHooks() {
 		try {
 			beginHook = new Hook(
@@ -311,6 +314,7 @@ public static class GlobalSpriteBatch {
 		}
 	}
 
+	[OnUnload]
 	internal static void UnregisterHooks() {
 		if (transitioning)
 			Celeste.Mod.Logger.Log(Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened during a spritebatch transition");
