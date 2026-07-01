@@ -22,13 +22,13 @@ internal sealed class KnownSymbols {
 	public ImmutableHashSet<ISymbol> InstructionMembers { get; }
 
 	public KnownSymbols(Compilation comp) {
-		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
-		ILHook = comp.GetTypeByMetadataName(KnownMetadataNames.ILHook);
-		NativeHook = comp.GetTypeByMetadataName(KnownMetadataNames.NativeHook);
-		DetourConfig = comp.GetTypeByMetadataName(KnownMetadataNames.DetourConfig);
-		ILCursor = comp.GetTypeByMetadataName(KnownMetadataNames.ILCursor);
-		ILContext = comp.GetTypeByMetadataName(KnownMetadataNames.ILContext);
-		Instruction = comp.GetTypeByMetadataName(KnownMetadataNames.Instruction);
+		Hook = comp.GetTypeByMetadataName(KnownTypeMetadataNames.Hook);
+		ILHook = comp.GetTypeByMetadataName(KnownTypeMetadataNames.ILHook);
+		NativeHook = comp.GetTypeByMetadataName(KnownTypeMetadataNames.NativeHook);
+		DetourConfig = comp.GetTypeByMetadataName(KnownTypeMetadataNames.DetourConfig);
+		ILCursor = comp.GetTypeByMetadataName(KnownTypeMetadataNames.ILCursor);
+		ILContext = comp.GetTypeByMetadataName(KnownTypeMetadataNames.ILContext);
+		Instruction = comp.GetTypeByMetadataName(KnownTypeMetadataNames.Instruction);
 
 		EmitDelegateMethods = ILCursor
 			?.GetMembers()

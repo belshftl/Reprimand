@@ -3,7 +3,7 @@
 
 namespace Reprimand.Analyzers.Discouraged;
 
-internal static class KnownMetadataNames {
+internal static class KnownTypeMetadataNames {
 	public const string Hook = "MonoMod.RuntimeDetour.Hook";
 	public const string ILHook = "MonoMod.RuntimeDetour.ILHook";
 	public const string NativeHook = "MonoMod.RuntimeDetour.NativeHook";

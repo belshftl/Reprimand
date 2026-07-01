@@ -31,7 +31,6 @@ Once the library exits in-dev and switches to major version 1, semver will be us
 ## The TODO corner
 
 Current TODO on existing features:
-- roslyn analyzer for lifecycle attribute methods
 - `[OnUnloadOrExit]` / `[OnUnloadOrExitWithOptionalDep]`
 
 Current actively worked-on documentation:

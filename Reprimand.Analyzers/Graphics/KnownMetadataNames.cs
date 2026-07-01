@@ -6,7 +6,7 @@ namespace Reprimand.Analyzers.Graphics;
 internal static class KnownMetadataNames {
 	public const string SpriteBatch = "Microsoft.Xna.Framework.Graphics.SpriteBatch";
 	public const string GlobalSpriteBatch = "Reprimand.Graphics.GlobalSpriteBatch";
-	public const string GlobalSpriteBatchProperty = "SpriteBatch";
+	public const string GlobalSpriteBatchProperty = "Batch";
 
 	public const string Draw = "Monocle.Draw";
 	public const string DrawSpriteBatchProperty = "SpriteBatch";

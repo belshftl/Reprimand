@@ -255,7 +255,7 @@ public static class GlobalSpriteBatch {
 	/// <exception cref="InvalidOperationException">
 	/// Thrown if the global spritebatch has not been initialized or changed after tracking began.
 	/// </exception>
-	public static SpriteBatch SpriteBatch => getTrackedBatch();
+	public static SpriteBatch Batch => getTrackedBatch();
 
 	/// <summary>
 	/// The effective parameters of the active spritebatch, or <see langword="null"/> if there is
