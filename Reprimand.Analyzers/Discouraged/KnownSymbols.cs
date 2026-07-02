@@ -21,14 +21,18 @@ internal sealed class KnownSymbols {
 	public ImmutableHashSet<IMethodSymbol> GotoMethods { get; }
 	public ImmutableHashSet<ISymbol> InstructionMembers { get; }
 
+	public INamedTypeSymbol? Entity { get; }
+	public INamedTypeSymbol? Component { get; }
+	public ImmutableHashSet<IMethodSymbol> SceneAsMethods { get; }
+
 	public KnownSymbols(Compilation comp) {
-		Hook = comp.GetTypeByMetadataName(KnownTypeMetadataNames.Hook);
-		ILHook = comp.GetTypeByMetadataName(KnownTypeMetadataNames.ILHook);
-		NativeHook = comp.GetTypeByMetadataName(KnownTypeMetadataNames.NativeHook);
-		DetourConfig = comp.GetTypeByMetadataName(KnownTypeMetadataNames.DetourConfig);
-		ILCursor = comp.GetTypeByMetadataName(KnownTypeMetadataNames.ILCursor);
-		ILContext = comp.GetTypeByMetadataName(KnownTypeMetadataNames.ILContext);
-		Instruction = comp.GetTypeByMetadataName(KnownTypeMetadataNames.Instruction);
+		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
+		ILHook = comp.GetTypeByMetadataName(KnownMetadataNames.ILHook);
+		NativeHook = comp.GetTypeByMetadataName(KnownMetadataNames.NativeHook);
+		DetourConfig = comp.GetTypeByMetadataName(KnownMetadataNames.DetourConfig);
+		ILCursor = comp.GetTypeByMetadataName(KnownMetadataNames.ILCursor);
+		ILContext = comp.GetTypeByMetadataName(KnownMetadataNames.ILContext);
+		Instruction = comp.GetTypeByMetadataName(KnownMetadataNames.Instruction);
 
 		EmitDelegateMethods = ILCursor
 			?.GetMembers()
@@ -53,5 +57,21 @@ internal sealed class KnownSymbols {
 			.Where(static m => m.Name is "OpCode" or "Operand")
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet(SymbolEqualityComparer.Default) ?? ImmutableHashSet<ISymbol>.Empty;
+
+		Entity = comp.GetTypeByMetadataName(KnownMetadataNames.Entity);
+		Component = comp.GetTypeByMetadataName(KnownMetadataNames.Component);
+		SceneAsMethods = Entity
+			?.GetMembers()
+			.OfType<IMethodSymbol>()
+			.Where(static m => m.Name == KnownMetadataNames.SceneAsMethod)
+			.Select(static m => m.OriginalDefinition)
+			.Concat(
+				Component
+				?.GetMembers()
+				.OfType<IMethodSymbol>()
+				.Where(static m => m.Name == KnownMetadataNames.SceneAsMethod)
+				.Select(static m => m.OriginalDefinition) ?? ImmutableArray<IMethodSymbol>.Empty
+			)
+			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 	}
 }

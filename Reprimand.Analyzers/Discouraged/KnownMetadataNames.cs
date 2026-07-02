@@ -3,7 +3,7 @@
 
 namespace Reprimand.Analyzers.Discouraged;
 
-internal static class KnownTypeMetadataNames {
+internal static class KnownMetadataNames {
 	public const string Hook = "MonoMod.RuntimeDetour.Hook";
 	public const string ILHook = "MonoMod.RuntimeDetour.ILHook";
 	public const string NativeHook = "MonoMod.RuntimeDetour.NativeHook";
@@ -11,4 +11,8 @@ internal static class KnownTypeMetadataNames {
 	public const string ILCursor = "MonoMod.Cil.ILCursor";
 	public const string ILContext = "MonoMod.Cil.ILContext";
 	public const string Instruction = "Mono.Cecil.Cil.Instruction";
+
+	public const string Entity = "Monocle.Entity";
+	public const string Component = "Monocle.Component";
+	public const string SceneAsMethod = "SceneAs";
 }

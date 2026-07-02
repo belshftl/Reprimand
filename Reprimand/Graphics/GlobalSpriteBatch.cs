@@ -317,11 +317,11 @@ public static class GlobalSpriteBatch {
 	[OnUnload]
 	internal static void UnregisterHooks() {
 		if (transitioning)
-			Celeste.Mod.Logger.Log(Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened during a spritebatch transition");
+			global::Celeste.Mod.Logger.Log(global::Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened during a spritebatch transition");
 		if (scopeStack.Count != 0)
-			Celeste.Mod.Logger.Log(Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened while managed scopes are active");
+			global::Celeste.Mod.Logger.Log(global::Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened while managed scopes are active");
 		if (currParams.HasValue)
-			Celeste.Mod.Logger.Log(Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened while the global spritebatch is active");
+			global::Celeste.Mod.Logger.Log(global::Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened while the global spritebatch is active");
 
 		try {
 			beginHook?.Dispose();

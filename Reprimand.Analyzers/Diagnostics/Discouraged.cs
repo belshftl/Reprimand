@@ -67,7 +67,6 @@ internal static class Discouraged {
 		isEnabledByDefault: true
 	);
 
-	/*
 	public static readonly DiagnosticDescriptor HookWithoutDetourID = new(
 		id: "RM0206",
 		title: "Declare hooks under detour IDs",
@@ -77,6 +76,32 @@ internal static class Discouraged {
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
-	*/
+
+	public static readonly DiagnosticDescriptor DontUseSceneAsMethod = new(
+		id: "RM0207",
+		title: "Don't use SceneAs<T>",
+		messageFormat: "Instead of `SceneAs<T>`, use `((T)Scene)` if a type mismatch should throw or `(Scene as T)` if you expect the cast to possibly fail; it's functionally identical, more idiomatic, and avoids calling a separate method for a simple cast operation",
+		category: "Discouraged",
+		defaultSeverity: DiagnosticSeverity.Warning,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor UseTypedTrackerMethods = new(
+		id: "RM0208",
+		title: "Use the typed tracker methods from Reprimand.Celeste",
+		messageFormat: "Use the typed tracker methods (`Tracker.GetEntitiesTyped<T>`, etc.) from Reprimand.Celeste instead of the vanilla ones",
+		category: "Discouraged",
+		defaultSeverity: DiagnosticSeverity.Warning,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor NonTrackerLookupOfTrackedEntityType = new(
+		id: "RM0209",
+		title: "Use the Tracker for tracked entity types",
+		messageFormat: "'{0}' is tracked; use Tracker.GetEntity<T> or Tracker.GetEntitiesTyped<T> (the latter is from Reprimand.Celeste) instead of EntityList.Find{First,All} as it's much faster",
+		category: "Discouraged",
+		defaultSeverity: DiagnosticSeverity.Warning,
+		isEnabledByDefault: true
+	);
 #pragma warning restore RS2008 // enable analyzer release tracking
 }

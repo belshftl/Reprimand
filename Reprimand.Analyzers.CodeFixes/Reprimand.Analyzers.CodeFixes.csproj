@@ -3,15 +3,13 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>14.0</LangVersion>
 		<Nullable>enable</Nullable>
-		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<DevelopmentDependency>true</DevelopmentDependency>
-		<NoPackageAnalysis>true</NoPackageAnalysis>
 
-		<PackageId>Reprimand.Analyzers</PackageId>
+		<PackageId>Reprimand.Analyzers.CodeFixes</PackageId>
 		<Version>0.1.0</Version>
 		<Authors>AtBelshftl</Authors>
-		<Description>analyzer for Celeste mods from the Reprimand project</Description>
+		<Description>codefixes from the analyzer for Celeste mods from the Reprimand project</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
 		<PackageLicenseExpression>LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
@@ -19,11 +17,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="../Reprimand.Analyzers/Reprimand.Analyzers.csproj" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- referencing newer versions of Microsoft.CodeAnalysis.* seems to break codefixes -->
+		<PackageReference Include="System.Composition" Version="10.0.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
-		<PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
-		<InternalsVisibleTo Include="Reprimand.Analyzers.CodeFixes" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
