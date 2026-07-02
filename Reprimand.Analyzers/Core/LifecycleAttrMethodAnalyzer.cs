@@ -6,6 +6,8 @@ using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 
 namespace Reprimand.Analyzers.Core;
 
@@ -14,7 +16,11 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 		Diagnostics.Core.InvalidLifecycleAttrMethodCandidate,
 		Diagnostics.Core.InvalidUnconditionalLifecycleAttrMethodParams,
-		Diagnostics.Core.InvalidDepConditionalLifecycleAttrMethodParams
+		Diagnostics.Core.InvalidDepConditionalLifecycleAttrMethodParams,
+		Diagnostics.Core.LifecycleAttrUndoMethodNotFound,
+		Diagnostics.Core.AmbiguousLifecycleAttrUndoMethodName,
+		Diagnostics.Core.InvalidLifecycleAttrUndoMethod,
+		Diagnostics.Core.UseNameofForLifecycleAttrUndoMethodName
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -24,9 +30,9 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 				KnownTypes known = new(ctx.Compilation);
 				if (
 					known.OnLoadAttribute is null ||
-					known.OnUnloadAttribute is null ||
-					known.OnLoadWithOptionalDepAttribute is null ||
-					known.OnUnloadWithOptionalDepAttribute is null ||
+					known.OnLoadOneshotAttribute is null ||
+					known.OnLoadIfOptionalDepAttribute is null ||
+					known.OnLoadIfOptionalDepOneshotAttribute is null ||
 					known.EverestModule is null
 				)
 					return;
@@ -42,12 +48,12 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		foreach (AttributeData a in sym.GetAttributes()) {
 			if (
 				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnLoadAttribute) ||
-				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnUnloadAttribute)
+				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnLoadOneshotAttribute)
 			) {
 				attr = a;
 			} else if (
-				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnLoadWithOptionalDepAttribute) ||
-				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnUnloadWithOptionalDepAttribute)
+				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnLoadIfOptionalDepAttribute) ||
+				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnLoadIfOptionalDepOneshotAttribute)
 			) {
 				attr = a;
 				isDepConditional = true;
@@ -55,9 +61,10 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		}
 		if (attr is null)
 			return;
-		Location loc = attr.ApplicationSyntaxReference?.GetSyntax(ctx.CancellationToken).GetLocation() ??
-			sym.Locations.FirstOrDefault(static l => l.IsInSource) ?? Location.None;
-		if (!sym.IsStatic || sym.IsGenericMethod)
+		analyzeAttributeReference(ctx, attr);
+		Location? loc = attr.ApplicationSyntaxReference?.GetSyntax(ctx.CancellationToken).GetLocation() ??
+			sym.Locations.FirstOrDefault(static l => l.IsInSource);
+		if (!sym.IsStatic || sym.IsGenericMethod || !sym.ReturnsVoid)
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrMethodCandidate, loc, sym.Name));
 
 		if (!isDepConditional) {
@@ -72,5 +79,50 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 			)
 				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidDepConditionalLifecycleAttrMethodParams, loc, sym.Name));
 		}
+	}
+
+	private static void analyzeAttributeReference(SymbolAnalysisContext ctx, AttributeData attr) {
+		SyntaxReference? sr = attr.ApplicationSyntaxReference;
+		if (sr is null)
+			return;
+		var sx = sr.GetSyntax(ctx.CancellationToken) as AttributeSyntax;
+		if (sx?.ArgumentList is null || sx.ArgumentList.Arguments.Count == 0)
+			return;
+		Location? loc = sx.ArgumentList.Arguments[0].Expression.GetLocation();
+
+		string? methodName = null;
+		foreach (KeyValuePair<string, TypedConstant> named in attr.NamedArguments) {
+			if (named is { Key: "UndoMethod", Value.Value: string s }) {
+				methodName = s;
+				ExpressionSyntax? node = sx.ArgumentList.Arguments.FirstOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == named.Key)?.Expression;
+				if (node is not InvocationExpressionSyntax)
+					ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.UseNameofForLifecycleAttrUndoMethodName, loc));
+				break;
+			}
+		}
+		if (methodName is null)
+			return;
+
+		INamedTypeSymbol containingType = ctx.Symbol as INamedTypeSymbol ?? ctx.Symbol.ContainingType;
+		if (containingType is null)
+			return;
+
+		var methods = containingType
+			.GetMembers(methodName)
+			.OfType<IMethodSymbol>()
+			.Where(static m => m.MethodKind == MethodKind.Ordinary)
+			.ToImmutableArray();
+
+		if (methods.Length == 0) {
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.LifecycleAttrUndoMethodNotFound, loc, methodName));
+			return;
+		}
+		if (methods.Length != 1) {
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.AmbiguousLifecycleAttrUndoMethodName, loc, methodName));
+			return;
+		}
+		IMethodSymbol m = methods[0];
+		if (!m.IsStatic || m.IsGenericMethod || m.Parameters.Length != 0 || !m.ReturnsVoid)
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrUndoMethod, loc, m.Name));
 	}
 }

@@ -80,7 +80,7 @@ internal static class Discouraged {
 	public static readonly DiagnosticDescriptor DontUseSceneAsMethod = new(
 		id: "RM0207",
 		title: "Don't use SceneAs<T>",
-		messageFormat: "Instead of `SceneAs<T>`, use `((T)Scene)` if a type mismatch should throw or `(Scene as T)` if you expect the cast to possibly fail; it's functionally identical, more idiomatic, and avoids calling a separate method for a simple cast operation",
+		messageFormat: "Instead of `SceneAs<T>`, use `((T)Scene)` if a type mismatch should throw or `(Scene as T)` if you expect the cast to possibly fail; it's functionally identical, more idiomatic, and avoids erasing the nullable annotation since Celeste/Monocle aren't nullable-aware",
 		category: "Discouraged",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true

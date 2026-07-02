@@ -5,10 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 using Celeste.Mod;
+using MonoMod.Utils;
 
 namespace Reprimand.Lifecycle;
+
+/// <summary>
+/// A record of calls performed by <see cref="LifecycleAttrRunner"/> on load, used to undo them
+/// later on unload.
+/// </summary>
+public sealed class LifecycleAttrCallRecord {
+	private MethodInfo[]? undoMethods;
+	internal LifecycleAttrCallRecord(MethodInfo[] undoMethods) {
+		this.undoMethods = undoMethods ?? throw new InternalStateException("LifecycleAttrCallRecord ctor passed null");
+	}
+	internal MethodInfo[] Consume() => Interlocked.Exchange(ref undoMethods, null) ??
+		throw new InvalidOperationException("the calls in this LifecycleAttrCallRecord have already been undone");
+}
 
 /// <summary>
 /// Methods to run lifecycle attribute methods in an assembly.
@@ -17,34 +32,36 @@ public static class LifecycleAttrRunner {
 	/// <summary>
 	/// Runs the on-load lifecycle attribute methods in a given assembly.
 	/// </summary>
-	public static void OnLoad(Assembly asm) {
-		foreach ((MethodInfo m, IOnLoadLifecycleAttribute a) in getOnLoadMethods(asm, typeof(OnLoadAttribute), typeof(OnLoadWithOptionalDepAttribute))) {
+	public static LifecycleAttrCallRecord OnLoad(Assembly asm) {
+		List<MethodInfo> undoList = new();
+		foreach ((MethodInfo m, IOnLoadLifecycleAttribute a) in getOnLoadMethods(asm, typeof(OnLoadAttribute), typeof(OnLoadIfOptionalDepAttribute))) {
+			if (m.DeclaringType is null) {
+				Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.Name}' has no declaring type; not calling it");
+				continue;
+			}
+			if (m.DeclaringType.FullName is null) {
+				Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.Name}' has a declaring type without a resolved full name; not calling it");
+				continue;
+			}
 			switch (a) {
-			case OnLoadAttribute:
-				if (m.GetParameters().Length != 0) {
-					Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a lifecycle attribute but isn't a valid lifecycle attribute method because it takes in more than 0 parameters; not calling it");
-				} else {
-					Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}'");
-					m.Invoke(null, null);
-				}
+			case OnLoadAttribute onLoad:
+				addUndoAndInvoke(m.DeclaringType.FullName + '.' + m.Name, m.DeclaringType, onLoad.UndoMethod, undoList, () => invokeParamless(m));
 				break;
-			case OnLoadWithOptionalDepAttribute opt:
-				ParameterInfo[] @params = m.GetParameters();
-				if (@params.Length != 0)
-					if (@params.Length != 1 || @params[0].ParameterType.IsByRef || @params[0].ParameterType.IsAssignableFrom(typeof(EverestModule)))
-						Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a optional-dep lifecycle attribute but isn't a valid optional-dep lifecycle attribute method because it takes in something that isn't either no parameters or a single parameter of type EverestModule; not calling it");
-				if (Everest.Loader.TryGetDependency(opt.Wanted, out EverestModule mod)) {
-					Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}'");
-					if (@params.Length == 0)
-						m.Invoke(null, null);
-					else
-						m.Invoke(null, [mod]);
-				}
+			case OnLoadOneshotAttribute:
+				invokeParamless(m);
+				break;
+			case OnLoadIfOptionalDepAttribute opt:
+				addUndoAndInvoke(m.DeclaringType.FullName + '.' + m.Name, m.DeclaringType, opt.UndoMethod, undoList, () => invokeOptDep(m, opt.Wanted));
+				break;
+			case OnLoadIfOptionalDepOneshotAttribute optOneshot:
+				invokeOptDep(m, optOneshot.Wanted);
 				break;
 			default:
-				throw new InternalStateException("expected IOnLoadLifecycleAttribute implementor to be OnLoadAttribute or OnLoadWithOptionalDepAttribute");
+				throw new InternalStateException("IOnLoadLifecycleAttribute implementor doesn't match any expected known types");
 			}
 		}
+		undoList.Reverse();
+		return new LifecycleAttrCallRecord(undoList.ToArray());
 	}
 
 	/// <summary>
@@ -53,38 +70,20 @@ public static class LifecycleAttrRunner {
 	/// <remarks>
 	/// Convenience overload for <see cref="OnLoad(Assembly)"/>.
 	/// </remarks>
-	public static void OnLoad(EverestModule m) => OnLoad(m.GetType().Assembly);
+	public static LifecycleAttrCallRecord OnLoad(EverestModule m) => OnLoad(m.GetType().Assembly);
 
 	/// <summary>
-	/// Runs the on-unload lifecycle attribute methods in a given assembly.
+	/// Runs the undo methods for the on-load lifecycle attribute method calls recorded in a
+	/// <see cref="LifecycleAttrCallRecord"/>.
 	/// </summary>
-	public static void OnUnload(Assembly asm) {
-		foreach ((MethodInfo m, IOnUnloadLifecycleAttribute a) in getOnUnloadMethods(asm, typeof(OnUnloadAttribute), typeof(OnUnloadWithOptionalDepAttribute))) {
-			switch (a) {
-			case OnUnloadAttribute:
-				if (m.GetParameters().Length != 0) {
-					Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a lifecycle attribute but isn't a valid lifecycle attribute method because it takes in more than 0 parameters; not calling it");
-				} else {
-					Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-unload lifecycle method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}'");
-					m.Invoke(null, null);
-				}
-				break;
-			case OnUnloadWithOptionalDepAttribute opt:
-				ParameterInfo[] @params = m.GetParameters();
-				if (@params.Length != 0)
-					if (@params.Length != 1 || @params[0].ParameterType.IsByRef || @params[0].ParameterType.IsAssignableFrom(typeof(EverestModule)))
-						Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a optional-dep lifecycle attribute but isn't a valid optional-dep lifecycle attribute method because it takes in something that isn't either no parameters or a single parameter of type EverestModule; not calling it");
-				if (Everest.Loader.TryGetDependency(opt.Wanted, out EverestModule mod)) {
-					Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-unload lifecycle method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}'");
-					if (@params.Length == 0)
-						m.Invoke(null, null);
-					else
-						m.Invoke(null, [mod]);
-				}
-				break;
-			default:
-				throw new InternalStateException("expected IOnUnloadLifecycleAttribute implementor to be OnUnloadAttribute or OnUnloadWithOptionalDepAttribute");
-			}
+	/// <remarks>
+	/// <paramref name="record"/> is consumed by this call and becomes unusable.
+	/// </remarks>
+	public static void OnUnload(LifecycleAttrCallRecord record) {
+		MethodInfo[] methods = record.Consume();
+		foreach (MethodInfo m in methods) {
+			Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle undo method '{m.DeclaringType!.FullName}.{m.Name}'");
+			m.Invoke(null, null);
 		}
 	}
 
@@ -107,93 +106,84 @@ public static class LifecycleAttrRunner {
 				foreach (Type a in attrTypes) {
 					if (m.GetCustomAttribute(a, inherit: false) is {} attr) {
 						var cast = (IOnLoadLifecycleAttribute)attr;
-						if (m.IsStatic && !m.IsGenericMethodDefinition)
+						if (m.IsStatic && !m.IsGenericMethodDefinition && m.ReturnType == typeof(void)) {
 							result.Add((m, cast));
-						else
-							Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a lifecycle attribute but isn't a valid lifecycle attribute method because it's {(!m.IsStatic ? "non-static" : "generic")}; not calling it");
+						} else {
+							string why = !m.IsStatic ? "is non-static" : (m.IsGenericMethodDefinition ? "is generic" : "doesn't return void");
+							Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a lifecycle attribute but isn't a valid lifecycle attribute method because it {why}; not calling it");
+						}
 					}
 				}
 			}
 		}
 		result.Sort((a, b) => {
-			int c = a.attr.Order.CompareTo(b.attr.Order);
+			int c = a.attr.Priority.CompareTo(b.attr.Priority);
 			if (c != 0)
 				return c;
-			return orderMethods(a.m, b.m, reverse: false);
+			return orderMethods(a.m, b.m);
 		});
 		return result;
 	}
 
-	private static List<(MethodInfo m, IOnUnloadLifecycleAttribute attr)> getOnUnloadMethods(Assembly asm, params Type[] attrTypes) {
-		if (attrTypes.Length == 0)
-			throw new InternalStateException("getOnUnloadMethods() takes in at least one attr type argument");
-
-		// enumerate upfront to hit ReflectionTypeUnloadException if there is one
-		Type[] types;
-		try {
-			types = asm.GetTypes().ToArray();
-		} catch (ReflectionTypeLoadException e) {
-			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"caught ReflectionTypeLoadException getting the types declared in assembly '{asm.FullName}'; that assembly may be missing some dependency or only partially loaded");
-			types = e.Types.Where(static t => t is not null).ToArray()!;
-		}
-
-		List<(MethodInfo m, IOnUnloadLifecycleAttribute attr)> result = new();
-		foreach (Type t in types) {
-			foreach (MethodInfo m in t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)) {
-				foreach (Type a in attrTypes) {
-					if (m.GetCustomAttribute(a, inherit: false) is {} attr) {
-						var cast = (IOnUnloadLifecycleAttribute)attr;
-						if (m.IsStatic && !m.IsGenericMethodDefinition)
-							result.Add((m, cast));
-						else
-							Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a lifecycle attribute but isn't a valid lifecycle attribute method because it's {(!m.IsStatic ? "non-static" : "generic")}; not calling it");
-					}
-				}
-			}
-		}
-		result.Sort((a, b) => {
-			int c = b.attr.ReverseOrder.CompareTo(a.attr.ReverseOrder);
-			if (c != 0)
-				return c;
-			return orderMethods(a.m, b.m, reverse: true);
-		});
-		return result;
-	}
-
-	private static int orderMethods(MethodInfo a, MethodInfo b, bool reverse) {
-		int mul = reverse ? -1 : 1;
-
+	private static int orderMethods(MethodInfo a, MethodInfo b) {
 		int cmp = StringComparer.Ordinal.Compare(a.DeclaringType?.AssemblyQualifiedName, b.DeclaringType?.AssemblyQualifiedName);
 		if (cmp != 0)
-			return cmp * mul;
+			return cmp;
 
 		cmp = StringComparer.Ordinal.Compare(a.Name, b.Name);
 		if (cmp != 0)
-			return cmp * mul;
+			return cmp;
 
 		ParameterInfo[] ap = a.GetParameters();
 		ParameterInfo[] bp = b.GetParameters();
 		cmp = ap.Length.CompareTo(bp.Length);
 		if (cmp != 0)
-			return cmp * mul;
+			return cmp;
 		for (int i = 0; i < ap.Length; i++) {
 			cmp = StringComparer.Ordinal.Compare(ap[i].ParameterType.AssemblyQualifiedName, bp[i].ParameterType.AssemblyQualifiedName);
 			if (cmp != 0)
-				return cmp * mul;
+				return cmp;
 		}
 
 		cmp = StringComparer.Ordinal.Compare(a.ReturnType.AssemblyQualifiedName, b.ReturnType.AssemblyQualifiedName);
 		if (cmp != 0)
-			return cmp * mul;
+			return cmp;
 
-		return a.MetadataToken.CompareTo(b.MetadataToken) * mul;
+		return a.MetadataToken.CompareTo(b.MetadataToken);
 	}
 
-	/// <summary>
-	/// Runs the on-load lifecycle attribute methods in the assembly of a given <see cref="EverestModule"/>.
-	/// </summary>
-	/// <remarks>
-	/// Convenience overload for <see cref="OnUnload(Assembly)"/>.
-	/// </remarks>
-	public static void OnUnload(EverestModule m) => OnUnload(m.GetType().Assembly);
+	private static void addUndoAndInvoke(string methodName, Type declaringType, string undoMethod, List<MethodInfo> undoList, Action callback) {
+		MethodInfo undo = declaringType.GetMethod(undoMethod, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly) ??
+			throw new MissingMethodException(declaringType.FullName, undoMethod);
+		if (undo.IsStatic && !undo.IsGenericMethodDefinition && undo.ReturnType == typeof(void) && undo.GetParameters().Length == 0) {
+			undoList.Add(undo);
+			callback();
+		} else {
+			string why = !undo.IsStatic ? "is non-static" : (undo.IsGenericMethodDefinition ? "is generic" : (undo.ReturnType == typeof(void) ? "doesn't return void" : "takes in more than 0 parameters"));
+			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{methodName}' has an invalid undo counterpart as said counterpart {why}; not calling it");
+		}
+	}
+
+	private static void invokeParamless(MethodInfo m) {
+		if (m.GetParameters().Length != 0) {
+			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in more than 0 parameters; not calling it");
+		} else {
+			Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}'");
+			m.Invoke(null, null);
+		}
+	}
+
+	private static void invokeOptDep(MethodInfo m, EverestModuleMetadata wanted) {
+		ParameterInfo[] @params = m.GetParameters();
+		if (@params.Length != 0)
+			if (@params.Length != 1 || @params[0].ParameterType.IsByRef || @params[0].ParameterType.IsAssignableFrom(typeof(EverestModule)))
+				Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in something either than 0 parameters or 1 parameter of type EverestModule; not calling it");
+		if (Everest.Loader.TryGetDependency(wanted, out EverestModule mod)) {
+			Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}'");
+			if (@params.Length == 0)
+				m.Invoke(null, null);
+			else
+				m.Invoke(null, [mod]);
+		}
+	}
 }

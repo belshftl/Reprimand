@@ -7,8 +7,8 @@ namespace Reprimand.Analyzers.Core;
 
 internal sealed class KnownTypes(Compilation comp) {
 	public INamedTypeSymbol? OnLoadAttribute { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.OnLoadAttribute);
-	public INamedTypeSymbol? OnLoadWithOptionalDepAttribute { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.OnLoadWithOptionalDepAttribute);
-	public INamedTypeSymbol? OnUnloadAttribute { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.OnUnloadAttribute);
-	public INamedTypeSymbol? OnUnloadWithOptionalDepAttribute { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.OnUnloadWithOptionalDepAttribute);
+	public INamedTypeSymbol? OnLoadOneshotAttribute { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.OnLoadOneshotAttribute);
+	public INamedTypeSymbol? OnLoadIfOptionalDepAttribute { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.OnLoadIfOptionalDepAttribute);
+	public INamedTypeSymbol? OnLoadIfOptionalDepOneshotAttribute { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.OnLoadIfOptionalDepOneshotAttribute);
 	public INamedTypeSymbol? EverestModule { get; } = comp.GetTypeByMetadataName(KnownTypeMetadataNames.EverestModule);
 }

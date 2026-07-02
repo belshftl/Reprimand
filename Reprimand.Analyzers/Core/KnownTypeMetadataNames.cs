@@ -5,8 +5,8 @@ namespace Reprimand.Analyzers.Core;
 
 internal static class KnownTypeMetadataNames {
 	public const string OnLoadAttribute = "Reprimand.Lifecycle.OnLoadAttribute";
-	public const string OnLoadWithOptionalDepAttribute = "Reprimand.Lifecycle.OnLoadWithOptionalDepAttribute";
-	public const string OnUnloadAttribute = "Reprimand.Lifecycle.OnUnloadAttribute";
-	public const string OnUnloadWithOptionalDepAttribute = "Reprimand.Lifecycle.OnUnloadWithOptionalDepAttribute";
+	public const string OnLoadOneshotAttribute = "Reprimand.Lifecycle.OnLoadOneshotAttribute";
+	public const string OnLoadIfOptionalDepAttribute = "Reprimand.Lifecycle.OnLoadIfOptionalDepAttribute";
+	public const string OnLoadIfOptionalDepOneshotAttribute = "Reprimand.Lifecycle.OnLoadIfOptionalDepOneshotAttribute";
 	public const string EverestModule = "Celeste.Mod.EverestModule";
 }

@@ -273,7 +273,7 @@ public static class GlobalSpriteBatch {
 	/// </summary>
 	public static Exception? PoisonReason => poisonReason;
 
-	[OnLoad]
+	[OnLoad(UndoMethod = nameof(UnregisterHooks))]
 	internal static void RegisterHooks() {
 		try {
 			beginHook = new Hook(
@@ -314,7 +314,6 @@ public static class GlobalSpriteBatch {
 		}
 	}
 
-	[OnUnload]
 	internal static void UnregisterHooks() {
 		if (transitioning)
 			global::Celeste.Mod.Logger.Log(global::Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened during a spritebatch transition");

@@ -94,7 +94,7 @@ public static class BackbufferAttachment {
 	/// </summary>
 	internal static int OverrideDepth => overrideStack.Count;
 
-	[OnLoad]
+	[OnLoad(UndoMethod = nameof(UnregisterHooks))]
 	internal static void RegisterHooks() {
 		setRenderTargetsHook = new Hook(
 			typeof(GraphicsDevice).GetMethod(
@@ -110,7 +110,6 @@ public static class BackbufferAttachment {
 		);
 	}
 
-	[OnUnload]
 	internal static void UnregisterHooks() {
 		if (overrideStack.Count != 0)
 			global::Celeste.Mod.Logger.Log(global::Celeste.Mod.LogLevel.Warn, "Reprimand/BackbufferAttachment", "unregistering hooks happened while backbuffer attachment overrides are active");

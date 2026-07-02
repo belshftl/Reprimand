@@ -15,6 +15,8 @@ internal sealed class ReprimandModule : EverestModule {
 	public static ReprimandModule Instance => Volatile.Read(ref instanceBacking) ?? throw new InvalidOperationException("the module has not been instantiated yet");
 	public volatile bool Active;
 
+	private LifecycleAttrCallRecord? onLoadCallRecord;
+
 	public ReprimandModule() {
 		if (Interlocked.CompareExchange(ref instanceBacking, this, null) is not null)
 			throw new InvalidOperationException("an instance of the module has already been instantiated");
@@ -26,13 +28,13 @@ internal sealed class ReprimandModule : EverestModule {
 	}
 
 	public override void Load() {
-		LifecycleAttrRunner.OnLoad(this);
+		onLoadCallRecord = LifecycleAttrRunner.OnLoad(this);
 		Active = true;
 	}
 
 	public override void Unload() {
 		Active = false;
-		LifecycleAttrRunner.OnUnload(this);
+		LifecycleAttrRunner.OnUnload(onLoadCallRecord ?? throw new InvalidOperationException("Unload() called before Load()"));
 	}
 
 	public static void ThrowIfInactive() {
