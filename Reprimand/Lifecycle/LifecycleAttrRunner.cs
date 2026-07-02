@@ -159,7 +159,7 @@ public static class LifecycleAttrRunner {
 			undoList.Add(undo);
 			callback();
 		} else {
-			string why = !undo.IsStatic ? "is non-static" : (undo.IsGenericMethodDefinition ? "is generic" : (undo.ReturnType == typeof(void) ? "doesn't return void" : "takes in more than 0 parameters"));
+			string why = !undo.IsStatic ? "is non-static" : (undo.IsGenericMethodDefinition ? "is generic" : (undo.ReturnType != typeof(void) ? "doesn't return void" : "takes in more than 0 parameters"));
 			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{methodName}' has an invalid undo counterpart as said counterpart {why}; not calling it");
 		}
 	}
