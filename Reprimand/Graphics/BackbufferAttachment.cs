@@ -1,13 +1,9 @@
 // SPDX-FileCopyrightText: 2026 belshftl
 // SPDX-License-Identifier: LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
-
 using Reprimand.Lifecycle;
 
 namespace Reprimand.Graphics;

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception
 
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.CodeAnalysis;
 
 namespace Reprimand.Analyzers.Graphics;

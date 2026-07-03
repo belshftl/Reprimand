@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception
 
 using System.Collections.Immutable;
-using System.Linq;
-
 using Microsoft.CodeAnalysis;
 
 namespace Reprimand.Analyzers.Usage;
@@ -27,6 +25,11 @@ internal sealed class KnownSymbols {
 
 	public INamedTypeSymbol? TrackedAsAttribute { get; }
 	public ImmutableHashSet<IFieldSymbol> TrackedAsAttributeFields { get; }
+
+	public INamedTypeSymbol? Tracker { get; }
+	public ImmutableHashSet<IMethodSymbol> TrackerExtReplacedMethods { get; }
+	public ImmutableHashSet<IMethodSymbol> TrackerEnumerateMethods { get; }
+	public ImmutableHashSet<IMethodSymbol> TrackerCountMethods { get; }
 
 	public KnownSymbols(Compilation comp) {
 		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
@@ -84,5 +87,43 @@ internal sealed class KnownSymbols {
 			.Where(static f => f.Name == KnownMetadataNames.TrackedAsAttributeTypeField || f.Name == KnownMetadataNames.TrackedAsAttributeInheritedField)
 			.Select(static f => f.OriginalDefinition)
 			.ToImmutableHashSet<IFieldSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IFieldSymbol>.Empty;
+
+		Tracker = comp.GetTypeByMetadataName(KnownMetadataNames.Tracker);
+		TrackerExtReplacedMethods = Tracker
+			?.GetMembers()
+			.OfType<IMethodSymbol>()
+			.Where(
+				static m =>
+					m.Name == KnownMetadataNames.TrackerGetEntityMethod ||
+					m.Name == KnownMetadataNames.TrackerGetNearestEntityMethod ||
+					m.Name == KnownMetadataNames.TrackerGetEntitiesMethod ||
+					m.Name == KnownMetadataNames.TrackerGetEntitiesCopyMethod ||
+					m.Name == KnownMetadataNames.TrackerGetComponentMethod ||
+					m.Name == KnownMetadataNames.TrackerGetNearestComponentMethod ||
+					m.Name == KnownMetadataNames.TrackerGetComponentsMethod ||
+					m.Name == KnownMetadataNames.TrackerGetComponentsCopyMethod
+			)
+			.Select(static m => m.OriginalDefinition)
+			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+		TrackerEnumerateMethods = Tracker
+			?.GetMembers()
+			.OfType<IMethodSymbol>()
+			.Where(
+				static m =>
+					m.Name == KnownMetadataNames.TrackerEnumerateEntitiesMethod ||
+					m.Name == KnownMetadataNames.TrackerEnumerateComponentsMethod
+			)
+			.Select(static m => m.OriginalDefinition)
+			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+		TrackerCountMethods = Tracker
+			?.GetMembers()
+			.OfType<IMethodSymbol>()
+			.Where(
+				static m =>
+					m.Name == KnownMetadataNames.TrackerCountEntitiesMethod ||
+					m.Name == KnownMetadataNames.TrackerCountComponentsMethod
+			)
+			.Select(static m => m.OriginalDefinition)
+			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 	}
 }

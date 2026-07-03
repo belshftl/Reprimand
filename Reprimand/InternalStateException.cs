@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2026 belshftl
 // SPDX-License-Identifier: LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception
 
-using System;
-
 namespace Reprimand;
 
 /// <summary>
@@ -12,7 +10,7 @@ namespace Reprimand;
 /// or <c>unsafe</c> code / reflection over internals / mod hooks have messed something up.
 /// </summary>
 /// <remarks>
-/// Do not throw this from your own code. Like, seriously.
+/// Do not throw this from your own code.
 /// Complete freedom is reserved to add special treatment for this exception type, including
 /// poisoning objects, skipping error handling / cleanup, bailing out on tasks/operations, or
 /// aborting the process.

@@ -104,35 +104,53 @@ internal static class Usage {
 		isEnabledByDefault: true
 	);
 
-	public static readonly DiagnosticDescriptor UseTypedTrackerMethods = new(
+	public static readonly DiagnosticDescriptor UseExtTrackerMethods = new(
 		id: "RM0210",
-		title: "Use the typed tracker methods from Reprimand.Celeste",
-		messageFormat: "Use the typed tracker methods (`Tracker.GetEntityTyped<T>`, `Tracker.GetEntitiesTyped<T>`, etc.) from Reprimand.Celeste, as the vanilla ones neglect some type safety and aren't nullable-aware",
+		title: "Use the tracker methods from Reprimand.Celeste",
+		messageFormat: "Use the tracker methods that end in `Ext` from Reprimand.Celeste (`Tracker.GetEntityExt<T>`, etc.), as the vanilla ones neglect some type safety, are not nullable-aware, and have less clear error reporting",
+		category: "Usage",
+		defaultSeverity: DiagnosticSeverity.Warning,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor DontUseTrackerEnumerateMethods = new(
+		id: "RM0211",
+		title: "Don't use Tracker.EnumerateEntities<T> or Tracker.EnumerateComponents<T>",
+		messageFormat: "Use Tracker.GetEntitiesExt<T> or Tracker.GetComponentsExt<T> instead of Tracker.EnumerateEntities<T> / Tracker.EnumerateComponents<T>; the overhead is either the same or even lower",
+		category: "Usage",
+		defaultSeverity: DiagnosticSeverity.Warning,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor DontUseTrackerCountMethods = new(
+		id: "RM0212",
+		title: "Don't use Tracker.CountEntities<T> or Tracker.CountComponents<T>",
+		messageFormat: "Do `Tracker.GetEntitiesExt<T>().Count` or `Tracker.GetComponentsExt<T>().Count` instead of Tracker.CountEntities<T> or Tracker.CountComponents<T>; it's functionally identical, more idiomatic, and has clearer exceptions",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
 
 	public static readonly DiagnosticDescriptor NonTrackerLookupOfTrackedEntityType = new(
-		id: "RM0211",
+		id: "RM0213",
 		title: "Use the Tracker for tracked entity types",
-		messageFormat: "'{0}' is tracked; use Tracker.GetEntityTyped<T> or Tracker.GetEntitiesTyped<T> (both from Reprimand.Celeste) instead of EntityList.Find{First,All} as it's much faster",
+		messageFormat: "'{0}' is tracked; use Tracker.GetEntityExt<T> or Tracker.GetEntitiesExt<T> (both from Reprimand.Celeste) instead of EntityList.Find{First,All} as it's much faster",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
 	);
 
 	public static readonly DiagnosticDescriptor TrackedAsIsClassOnly = new(
-		id: "RM0212",
+		id: "RM0214",
 		title: "[TrackedAs] can only be applied to classes",
-		messageFormat: "[TrackedAs] is only valid on class declarations",
+		messageFormat: "[TrackedAs] is only valid on class declarations; the attribute doesn't have `AttributeTargets.Class` set due to an Everest oversight",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true
 	);
 
 	public static readonly DiagnosticDescriptor InvalidTrackedAsType = new(
-		id: "RM0213",
+		id: "RM0215",
 		title: "Invalid [TrackedAs] type",
 		messageFormat: "[TrackedAs] target type '{0}' must be a non-static reference-type class",
 		category: "Usage",
@@ -141,7 +159,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor UnrelatedTrackedAsType = new(
-		id: "RM0214",
+		id: "RM0216",
 		title: "[TrackedAs] type is unrelated to the attributed class",
 		messageFormat: "Type '{0}' must be the same as, or derive from, [TrackedAs] type '{1}'",
 		category: "Usage",
@@ -150,7 +168,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor TrackedAsDerivedFrom = new(
-		id: "RM0215",
+		id: "RM0217",
 		title: "Do not derive from TrackedAsAttribute",
 		messageFormat: "Type '{0}' must not derive from TrackedAsAttribute",
 		category: "Usage",
@@ -159,7 +177,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor TrackedAsFieldWrite = new(
-		id: "RM0216",
+		id: "RM0218",
 		title: "Do not write to fields in TrackedAsAttribute",
 		messageFormat: "Do not write to '{0}'; the fields in TrackedAsAttribute are not readonly fields or get-only properties due to an Everest oversight, and should not be written to",
 		category: "Usage",

@@ -9,9 +9,11 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Reprimand.Analyzers.Usage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class SceneAsAnalyzer : DiagnosticAnalyzer {
+public sealed class TrackerAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-		Diagnostics.Usage.DontUseSceneAsMethod
+		Diagnostics.Usage.UseExtTrackerMethods,
+		Diagnostics.Usage.DontUseTrackerEnumerateMethods,
+		Diagnostics.Usage.DontUseTrackerCountMethods
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -26,7 +28,11 @@ public sealed class SceneAsAnalyzer : DiagnosticAnalyzer {
 
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
 		var inv = (IInvocationOperation)ctx.Operation;
-		if (known.SceneAsMethods.Contains(inv.TargetMethod.OriginalDefinition))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseSceneAsMethod, inv.Syntax.GetLocation()));
+		if (known.TrackerExtReplacedMethods.Contains(inv.TargetMethod.OriginalDefinition))
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.UseExtTrackerMethods, inv.Syntax.GetLocation()));
+		else if (known.TrackerEnumerateMethods.Contains(inv.TargetMethod.OriginalDefinition))
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerEnumerateMethods, inv.Syntax.GetLocation()));
+		else if (known.TrackerCountMethods.Contains(inv.TargetMethod.OriginalDefinition))
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerCountMethods, inv.Syntax.GetLocation()));
 	}
 }
