@@ -6,7 +6,7 @@ using System.Linq;
 
 using Microsoft.CodeAnalysis;
 
-namespace Reprimand.Analyzers.Discouraged;
+namespace Reprimand.Analyzers.Usage;
 
 internal sealed class KnownSymbols {
 	public INamedTypeSymbol? Hook { get; }
@@ -24,6 +24,9 @@ internal sealed class KnownSymbols {
 	public INamedTypeSymbol? Entity { get; }
 	public INamedTypeSymbol? Component { get; }
 	public ImmutableHashSet<IMethodSymbol> SceneAsMethods { get; }
+
+	public INamedTypeSymbol? TrackedAsAttribute { get; }
+	public ImmutableHashSet<IFieldSymbol> TrackedAsAttributeFields { get; }
 
 	public KnownSymbols(Compilation comp) {
 		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
@@ -73,5 +76,13 @@ internal sealed class KnownSymbols {
 				.Select(static m => m.OriginalDefinition) ?? ImmutableArray<IMethodSymbol>.Empty
 			)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+
+		TrackedAsAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.TrackedAsAttribute);
+		TrackedAsAttributeFields = TrackedAsAttribute
+			?.GetMembers()
+			.OfType<IFieldSymbol>()
+			.Where(static f => f.Name == KnownMetadataNames.TrackedAsAttributeTypeField || f.Name == KnownMetadataNames.TrackedAsAttributeInheritedField)
+			.Select(static f => f.OriginalDefinition)
+			.ToImmutableHashSet<IFieldSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IFieldSymbol>.Empty;
 	}
 }

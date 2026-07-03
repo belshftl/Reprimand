@@ -7,12 +7,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Reprimand.Analyzers.Discouraged;
+namespace Reprimand.Analyzers.Usage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SceneAsAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-		Diagnostics.Discouraged.DontUseSceneAsMethod
+		Diagnostics.Usage.DontUseSceneAsMethod
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -28,6 +28,6 @@ public sealed class SceneAsAnalyzer : DiagnosticAnalyzer {
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
 		var inv = (IInvocationOperation)ctx.Operation;
 		if (known.SceneAsMethods.Contains(inv.TargetMethod.OriginalDefinition))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Discouraged.DontUseSceneAsMethod, inv.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseSceneAsMethod, inv.Syntax.GetLocation()));
 	}
 }

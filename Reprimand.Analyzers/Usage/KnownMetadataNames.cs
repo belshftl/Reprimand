@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 belshftl
 // SPDX-License-Identifier: LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception
 
-namespace Reprimand.Analyzers.Discouraged;
+namespace Reprimand.Analyzers.Usage;
 
 internal static class KnownMetadataNames {
 	public const string Hook = "MonoMod.RuntimeDetour.Hook";
@@ -15,4 +15,8 @@ internal static class KnownMetadataNames {
 	public const string Entity = "Monocle.Entity";
 	public const string Component = "Monocle.Component";
 	public const string SceneAsMethod = "SceneAs";
+
+	public const string TrackedAsAttribute = "Monocle.TrackedAsAttribute";
+	public const string TrackedAsAttributeTypeField = "TrackedAsType";
+	public const string TrackedAsAttributeInheritedField = "Inherited";
 }

@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.CodeAnalysis;
 
-namespace Reprimand.Analyzers.Discouraged;
+namespace Reprimand.Analyzers.Usage;
 
 internal static class TypeSymbolExtensions {
 	extension([NotNullWhen(true)] ITypeSymbol? type) {

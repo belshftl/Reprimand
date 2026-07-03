@@ -22,7 +22,7 @@ public sealed class DontUseSceneAsMethodCodeFixProvider : CodeFixProvider {
 	private const string asCastKey = "SceneAs.AsCast";
 
 	public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
-		Diagnostics.Discouraged.DontUseSceneAsMethod.Id
+		Diagnostics.Usage.DontUseSceneAsMethod.Id
 	);
 
 	public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;

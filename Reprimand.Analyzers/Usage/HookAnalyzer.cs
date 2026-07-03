@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Reprimand.Analyzers.Discouraged;
+namespace Reprimand.Analyzers.Usage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class HookAnalyzer : DiagnosticAnalyzer {
@@ -19,12 +19,12 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 	}
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-		Diagnostics.Discouraged.NonStaticHookMethod,
-		Diagnostics.Discouraged.HookStaticLambda,
-		Diagnostics.Discouraged.NonStaticEmitDelegateMethod,
-		Diagnostics.Discouraged.EmitDelegateStaticLambda,
-		Diagnostics.Discouraged.DestructiveILEdit,
-		Diagnostics.Discouraged.PreferRequireGoto
+		Diagnostics.Usage.NonStaticHookMethod,
+		Diagnostics.Usage.HookStaticLambda,
+		Diagnostics.Usage.NonStaticEmitDelegateMethod,
+		Diagnostics.Usage.EmitDelegateStaticLambda,
+		Diagnostics.Usage.DestructiveILEdit,
+		Diagnostics.Usage.PreferRequireGoto
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -51,7 +51,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 			return;
 		IArgumentOperation? delegateArg = findDelegateArgument(creat.Arguments);
 		if (delegateArg is not null)
-			maybeReportDelegateArg(ctx, delegateArg, Diagnostics.Discouraged.NonStaticHookMethod, Diagnostics.Discouraged.HookStaticLambda);
+			maybeReportDelegateArg(ctx, delegateArg, Diagnostics.Usage.NonStaticHookMethod, Diagnostics.Usage.HookStaticLambda);
 	}
 
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
@@ -59,17 +59,17 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		if (known.EmitDelegateMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
 			IArgumentOperation? delegateArg = findDelegateArgument(inv.Arguments);
 			if (delegateArg is not null)
-				maybeReportDelegateArg(ctx, delegateArg, Diagnostics.Discouraged.NonStaticEmitDelegateMethod, Diagnostics.Discouraged.EmitDelegateStaticLambda);
+				maybeReportDelegateArg(ctx, delegateArg, Diagnostics.Usage.NonStaticEmitDelegateMethod, Diagnostics.Usage.EmitDelegateStaticLambda);
 		} else if (known.RemoveInstructionMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Discouraged.DestructiveILEdit, inv.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
 		} else if (known.GotoMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Discouraged.PreferRequireGoto, inv.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.PreferRequireGoto, inv.Syntax.GetLocation()));
 		} else {
 			ITypeSymbol? receiverType = inv.Instance?.Type;
 			if (receiverType is null || !isInstructionListLike(receiverType, known))
 				return;
 			if (inv.TargetMethod.Name is "Add" or "AddRange" or "Clear" or "Insert" or "InsertRange" or "Remove" or "RemoveAt" or "RemoveRange")
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Discouraged.DestructiveILEdit, inv.Syntax.GetLocation()));
+				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
 		}
 	}
 
@@ -87,13 +87,13 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 			IPropertySymbol prop = propRef.Property.OriginalDefinition;
 			if (known.InstructionMembers.Contains(prop) ||
 				propRef.Property.IsIndexer && propRef.Instance?.Type is {} receiverType && isInstructionListLike(receiverType, known)) {
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Discouraged.DestructiveILEdit, left.Syntax.GetLocation()));
+				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, left.Syntax.GetLocation()));
 				return;
 			}
 		}
 
 		if (left is IFieldReferenceOperation fieldRef && known.InstructionMembers.Contains(fieldRef.Field.OriginalDefinition))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Discouraged.DestructiveILEdit, left.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, left.Syntax.GetLocation()));
 	}
 
 	private static bool isInstructionListLike(ITypeSymbol type, KnownSymbols known) {
