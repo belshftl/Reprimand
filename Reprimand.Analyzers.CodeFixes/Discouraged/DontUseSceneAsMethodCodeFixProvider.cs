@@ -54,9 +54,8 @@ public sealed class DontUseSceneAsMethodCodeFixProvider : CodeFixProvider {
 		);
 
 		// don't offer `Scene as T` when the `T` is definitely invalid for the cast
-		SemanticModel? semanticModel = await ctx.Document.GetSemanticModelAsync(ctx.CancellationToken).ConfigureAwait(false);
-
-		ITypeSymbol? targetType = semanticModel?.GetTypeInfo(type, ctx.CancellationToken).Type;
+		SemanticModel? model = await ctx.Document.GetSemanticModelAsync(ctx.CancellationToken).ConfigureAwait(false);
+		ITypeSymbol? targetType = model?.GetTypeInfo(type, ctx.CancellationToken).Type;
 		if (targetType is not null && canUseAs(targetType)) {
 			ctx.RegisterCodeFix(
 				CodeAction.Create(

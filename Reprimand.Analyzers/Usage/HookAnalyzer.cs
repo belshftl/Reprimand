@@ -30,6 +30,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static ctx => {
 				KnownSymbols known = new(ctx.Compilation);
+				ctx.RegisterOperationAction(analyzeEventAssignment, OperationKind.EventAssignment);
 				ctx.RegisterOperationAction(c => analyzeObjectCreation(c, known), OperationKind.ObjectCreation);
 				ctx.RegisterOperationAction(c => analyzeInvocation(c, known), OperationKind.Invocation);
 				ctx.RegisterOperationAction(
@@ -41,6 +42,16 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 				);
 			}
 		);
+	}
+
+	private static void analyzeEventAssignment(OperationAnalysisContext ctx) {
+		var asg = (IEventAssignmentOperation)ctx.Operation;
+		var @ref = (IEventReferenceOperation)asg.EventReference;
+		IEventSymbol sym = @ref.Event;
+		INamespaceSymbol ns = sym.ContainingNamespace;
+		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } inner; ns = inner);
+		if (ns.Name is "On" or "IL")
+			maybeReportDelegateValue(ctx, asg.HandlerValue, Diagnostics.Usage.NonStaticHookMethod, Diagnostics.Usage.HookStaticLambda);
 	}
 
 	private static void analyzeObjectCreation(OperationAnalysisContext ctx, KnownSymbols known) {
@@ -124,15 +135,18 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		return null;
 	}
 
-	private static void maybeReportDelegateArg(OperationAnalysisContext ctx, IArgumentOperation arg, DiagnosticDescriptor nonStaticDd, DiagnosticDescriptor staticLambdaDd) {
-		switch (classifyDelegateExpression(arg.Value)) {
+	private static void maybeReportDelegateArg(OperationAnalysisContext ctx, IArgumentOperation arg, DiagnosticDescriptor nonStaticDd, DiagnosticDescriptor staticLambdaDd) =>
+		maybeReportDelegateValue(ctx, arg.Value, nonStaticDd, staticLambdaDd);
+
+	private static void maybeReportDelegateValue(OperationAnalysisContext ctx, IOperation op, DiagnosticDescriptor nonStaticDd, DiagnosticDescriptor staticLambdaDd) {
+		switch (classifyDelegateExpression(op)) {
 		case DelegateTargetKind.PlainStaticMethodGroup:
 			return;
 		case DelegateTargetKind.StaticLambda:
-			ctx.ReportDiagnostic(Diagnostic.Create(staticLambdaDd, arg.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(staticLambdaDd, op.Syntax.GetLocation()));
 			return;
 		case DelegateTargetKind.NonStaticOrUnknown:
-			ctx.ReportDiagnostic(Diagnostic.Create(nonStaticDd, arg.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(nonStaticDd, op.Syntax.GetLocation()));
 			return;
 		}
 	}

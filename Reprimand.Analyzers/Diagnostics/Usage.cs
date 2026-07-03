@@ -65,7 +65,7 @@ internal static class Usage {
 
 	public static readonly DiagnosticDescriptor NonStaticEmitDelegateMethod = new(
 		id: "RM0206",
-		title: "EmitDelegate argument should be a plain static methods",
+		title: "EmitDelegate argument should be a plain static method",
 		messageFormat:
 		"EmitDelegate should be passed a plain static method; instance methods / capturing lambdas can cause all sorts of chaos by capturing state, and Action/Func/etc objects make it hard to pinpoint what actually gets called",
 		category: "Usage",

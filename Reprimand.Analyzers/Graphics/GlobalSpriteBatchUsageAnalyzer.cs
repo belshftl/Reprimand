@@ -175,7 +175,7 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 
 	private static bool isWithinGlobalSpriteBatch(ISymbol? sym, INamedTypeSymbol globalSpriteBatchType) {
 		for (ISymbol? curr = sym; curr is not null; curr = curr.ContainingSymbol)
-			if (curr is INamedTypeSymbol type && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, globalSpriteBatchType.OriginalDefinition))
+			if (curr is INamedTypeSymbol type && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, globalSpriteBatchType))
 				return true;
 		return false;
 	}

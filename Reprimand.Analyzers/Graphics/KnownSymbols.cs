@@ -16,29 +16,17 @@ internal sealed class KnownSymbols {
 	public KnownSymbols(Compilation comp) {
 		SpriteBatch = comp.GetTypeByMetadataName(KnownMetadataNames.SpriteBatch);
 		GlobalSpriteBatch = comp.GetTypeByMetadataName(KnownMetadataNames.GlobalSpriteBatch);
-		if (SpriteBatch is not null && GlobalSpriteBatch is not null) {
-			IPropertySymbol? result = null;
-			foreach (ISymbol member in GlobalSpriteBatch.GetMembers(KnownMetadataNames.GlobalSpriteBatchProperty)) {
-				if (member is not IPropertySymbol p || !p.IsStatic || !p.Type.IsOrDerivesFrom(SpriteBatch))
-					continue;
-				if (result is not null)
-					return;
-				result = p;
-			}
-			GlobalSpriteBatchProperty = result;
-		}
+		GlobalSpriteBatchProperty = GlobalSpriteBatch
+			?.GetMembers()
+			.OfType<IPropertySymbol>()
+			.FirstOrDefault(static p => p.Name == KnownMetadataNames.GlobalSpriteBatchBatchProperty)
+			?.OriginalDefinition;
 
 		Draw = comp.GetTypeByMetadataName(KnownMetadataNames.Draw);
-		if (Draw is not null) {
-			IPropertySymbol? result = null;
-			foreach (ISymbol member in Draw.GetMembers(KnownMetadataNames.DrawSpriteBatchProperty)) {
-				if (member is not IPropertySymbol p || !p.IsStatic || !p.Type.IsOrDerivesFrom(SpriteBatch))
-					continue;
-				if (result is not null)
-					return;
-				result = p;
-			}
-			DrawSpriteBatchProperty = result;
-		}
+		DrawSpriteBatchProperty = Draw
+			?.GetMembers()
+			.OfType<IPropertySymbol>()
+			.FirstOrDefault(static p => p.Name == KnownMetadataNames.DrawSpriteBatchProperty)
+			?.OriginalDefinition;
 	}
 }
