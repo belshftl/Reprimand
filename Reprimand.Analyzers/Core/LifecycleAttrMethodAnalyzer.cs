@@ -62,11 +62,11 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		Location? loc = attr.ApplicationSyntaxReference?.GetSyntax(ctx.CancellationToken).GetLocation() ??
 			sym.Locations.FirstOrDefault(static l => l.IsInSource);
 		if (!sym.IsStatic || sym.IsGenericMethod || !sym.ReturnsVoid)
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrMethodCandidate, loc, sym.Name));
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrMethodCandidate, loc, sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
 
 		if (!isDepConditional) {
 			if (sym.Parameters.Length != 0)
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidUnconditionalLifecycleAttrMethodParams, loc, sym.Name));
+				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidUnconditionalLifecycleAttrMethodParams, loc, sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
 		} else {
 			if (sym.Parameters.Length != 0 &&
 				!(
@@ -74,7 +74,7 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 					SymbolEqualityComparer.Default.Equals(sym.Parameters[0].Type, known.EverestModule)
 				)
 			)
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidDepConditionalLifecycleAttrMethodParams, loc, sym.Name));
+				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidDepConditionalLifecycleAttrMethodParams, loc, sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
 		}
 	}
 
@@ -120,6 +120,6 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		}
 		IMethodSymbol m = methods[0];
 		if (!m.IsStatic || m.IsGenericMethod || m.Parameters.Length != 0 || !m.ReturnsVoid)
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrUndoMethod, loc, m.Name));
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrUndoMethod, loc, m.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
 	}
 }

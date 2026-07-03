@@ -8,7 +8,7 @@ namespace Reprimand.Analyzers.Graphics;
 
 internal static class TypeSymbolExtensions {
 	extension([NotNullWhen(true)] ITypeSymbol? type) {
-		public bool IsOrDerivesFrom(INamedTypeSymbol? candidateBase) {
+		public bool IsOrDerivesFrom([NotNullWhen(true)] INamedTypeSymbol? candidateBase) {
 			if (type is null || candidateBase is null)
 				return false;
 			for (ITypeSymbol? sym = type; sym is not null; sym = sym.BaseType)

@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.RuntimeDetour;
+using Reprimand.CodeAnalysis;
 using Reprimand.Lifecycle;
 
 namespace Reprimand.Graphics;
@@ -251,6 +252,7 @@ public static class GlobalSpriteBatch {
 	/// <exception cref="InvalidOperationException">
 	/// Thrown if the global spritebatch has not been initialized or changed after tracking began.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static SpriteBatch Batch => getTrackedBatch();
 
 	/// <summary>
@@ -364,6 +366,7 @@ public static class GlobalSpriteBatch {
 	/// Thrown if a transition is already in progress, the class is poisoned, or the global
 	/// spritebatch is unavailable.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static BatchScope Begin(scoped in BatchParameters parameters) {
 		throwIfManagedOpUnavailable();
 		SpriteBatch batch = getTrackedBatch();
@@ -444,6 +447,7 @@ public static class GlobalSpriteBatch {
 	/// Thrown if a transition is already in progress, the class is poisoned, or the global
 	/// spritebatch is unavailable.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static BatchScope Begin(
 		SpriteSortMode sortMode = SpriteSortMode.Deferred,
 		BlendState? blendState = null,
@@ -467,6 +471,7 @@ public static class GlobalSpriteBatch {
 	/// Thrown if the spritebatch is already active, a managed batch scope is active, a transition is
 	/// already in progress, or the class is poisoned.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static void BeginUnscoped(in BatchParameters @params) {
 		throwIfManagedOpUnavailable();
 		throwIfUnscopedLifecycleUnavailable();
@@ -496,6 +501,7 @@ public static class GlobalSpriteBatch {
 	/// Thrown if the spritebatch is already active, a managed scope is active, a transition is
 	/// already in progress, or the class is poisoned.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static void BeginUnscoped(
 		SpriteSortMode sortMode = SpriteSortMode.Deferred,
 		BlendState? blendState = null,
@@ -516,6 +522,7 @@ public static class GlobalSpriteBatch {
 	/// Thrown if no batch is active, a managed batch scope is active, a transition is already in
 	/// progress, or the class is poisoned.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static BatchParameters EndCurrent() {
 		throwIfManagedOpUnavailable();
 		throwIfUnscopedLifecycleUnavailable();
@@ -542,6 +549,7 @@ public static class GlobalSpriteBatch {
 	/// Thrown if no batch is active, a managed batch scope is active, a transition is already in
 	/// progress, or the class is poisoned.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static void RestartCurrent() {
 		throwIfManagedOpUnavailable();
 		throwIfUnscopedLifecycleUnavailable();
@@ -593,6 +601,7 @@ public static class GlobalSpriteBatch {
 	/// <exception cref="InvalidOperationException">
 	/// Thrown if no spritebatch is active, a transition is already in progress, or the class is poisoned.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static Suspension Suspend() {
 		throwIfManagedOpUnavailable();
 		BatchParameters @params = currParams ?? throw new InvalidOperationException("the global SpriteBatch is not active");
@@ -608,6 +617,7 @@ public static class GlobalSpriteBatch {
 	/// <exception cref="InvalidOperationException">
 	/// Thrown if a transition is already in progress or the class is poisoned.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static Suspension SuspendIfActive() {
 		throwIfManagedOpUnavailable();
 		return currParams is { } @params ? suspendCore(@params) : default;

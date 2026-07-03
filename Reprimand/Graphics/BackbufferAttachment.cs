@@ -4,6 +4,7 @@
 using System.Reflection;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
+using Reprimand.CodeAnalysis;
 using Reprimand.Lifecycle;
 
 namespace Reprimand.Graphics;
@@ -130,6 +131,7 @@ public static class BackbufferAttachment {
 	/// Thrown if <paramref name="behavior"/> is not a valid <see cref="BackbufferAttachBehavior"/>
 	/// enum value.
 	/// </exception>
+	[DontUseInStaticCtor]
 	public static OverrideScope SetOverride(BackbufferAttachBehavior behavior) {
 		if (!(behavior is BackbufferAttachBehavior.Clear or BackbufferAttachBehavior.Load))
 			throw new ArgumentOutOfRangeException(nameof(behavior), behavior, "out of range BackbufferAttachBehavior enum value");
@@ -145,6 +147,7 @@ public static class BackbufferAttachment {
 	/// <returns>
 	/// A scope which restores the previous override when disposed.
 	/// </returns>
+	[DontUseInStaticCtor]
 	public static OverrideScope SetLoad() => SetOverride(BackbufferAttachBehavior.Load);
 
 	/// <summary>
@@ -153,6 +156,7 @@ public static class BackbufferAttachment {
 	/// <returns>
 	/// A scope which restores the previous override when disposed.
 	/// </returns>
+	[DontUseInStaticCtor]
 	public static OverrideScope SetClear() => SetOverride(BackbufferAttachBehavior.Clear);
 
 	private static void on_GraphicsDevice_SetRenderTargets(orig_GraphicsDevice_SetRenderTargets orig, GraphicsDevice self, RenderTargetBinding[]? renderTargets) {

@@ -13,7 +13,8 @@ public sealed class TrackerAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 		Diagnostics.Usage.UseExtTrackerMethods,
 		Diagnostics.Usage.DontUseTrackerEnumerateMethods,
-		Diagnostics.Usage.DontUseTrackerCountMethods
+		Diagnostics.Usage.DontUseTrackerCountMethods,
+		Diagnostics.Usage.NonTrackerLookupOfTrackedEntityType
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -28,11 +29,21 @@ public sealed class TrackerAnalyzer : DiagnosticAnalyzer {
 
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
 		var inv = (IInvocationOperation)ctx.Operation;
-		if (known.TrackerExtReplacedMethods.Contains(inv.TargetMethod.OriginalDefinition))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.UseExtTrackerMethods, inv.Syntax.GetLocation()));
-		else if (known.TrackerEnumerateMethods.Contains(inv.TargetMethod.OriginalDefinition))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerEnumerateMethods, inv.Syntax.GetLocation()));
-		else if (known.TrackerCountMethods.Contains(inv.TargetMethod.OriginalDefinition))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerCountMethods, inv.Syntax.GetLocation()));
+		Location loc = inv.Syntax.GetLocation();
+		if (known.TrackerExtReplacedMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.UseExtTrackerMethods, loc));
+		} else if (known.TrackerEnumerateMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerEnumerateMethods, loc));
+		} else if (known.TrackerCountMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerCountMethods, loc));
+		} else if (known.EntityListFindMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+			if (!inv.TargetMethod.IsGenericMethod || inv.TargetMethod.OriginalDefinition.TypeArguments.Length != 1)
+				return;
+			ITypeSymbol typeParam = inv.TargetMethod.TypeArguments[0];
+			if (!typeParam.IsReferenceType)
+				return;
+			if (typeParam.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.TrackedAttribute)))
+				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.NonTrackerLookupOfTrackedEntityType, loc, typeParam.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+		}
 	}
 }

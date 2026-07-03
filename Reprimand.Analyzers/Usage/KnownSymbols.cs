@@ -7,6 +7,8 @@ using Microsoft.CodeAnalysis;
 namespace Reprimand.Analyzers.Usage;
 
 internal sealed class KnownSymbols {
+	public INamedTypeSymbol? DontUseInStaticCtorAttribute { get; }
+
 	public INamedTypeSymbol? Hook { get; }
 	public INamedTypeSymbol? ILHook { get; }
 	public INamedTypeSymbol? NativeHook { get; }
@@ -23,15 +25,33 @@ internal sealed class KnownSymbols {
 	public INamedTypeSymbol? Component { get; }
 	public ImmutableHashSet<IMethodSymbol> SceneAsMethods { get; }
 
+	public INamedTypeSymbol? TrackedAttribute { get; }
 	public INamedTypeSymbol? TrackedAsAttribute { get; }
-	public ImmutableHashSet<IFieldSymbol> TrackedAsAttributeFields { get; }
 
 	public INamedTypeSymbol? Tracker { get; }
 	public ImmutableHashSet<IMethodSymbol> TrackerExtReplacedMethods { get; }
 	public ImmutableHashSet<IMethodSymbol> TrackerEnumerateMethods { get; }
 	public ImmutableHashSet<IMethodSymbol> TrackerCountMethods { get; }
 
+	public INamedTypeSymbol? EntityList { get; }
+	public ImmutableHashSet<IMethodSymbol> EntityListFindMethods { get; }
+
+	public INamedTypeSymbol? Engine { get; }
+	public ImmutableHashSet<IPropertySymbol> NonStaticInitedEngineProperties { get; }
+
+	public INamedTypeSymbol? Draw { get; }
+	public ImmutableHashSet<IFieldSymbol> NonStaticInitedDrawFields { get; }
+	public ImmutableHashSet<IPropertySymbol> NonStaticInitedDrawProperties { get; }
+
+	public INamedTypeSymbol? Gfx { get; }
+	public ImmutableHashSet<IFieldSymbol> NonStaticInitedGfxFields { get; }
+
+	public INamedTypeSymbol? VirtualContent { get; }
+	public ImmutableHashSet<IMethodSymbol> NonStaticInitedVirtualContentMethods { get; }
+
 	public KnownSymbols(Compilation comp) {
+		DontUseInStaticCtorAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.DontUseInStaticCtorAttribute);
+
 		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
 		ILHook = comp.GetTypeByMetadataName(KnownMetadataNames.ILHook);
 		NativeHook = comp.GetTypeByMetadataName(KnownMetadataNames.NativeHook);
@@ -80,13 +100,8 @@ internal sealed class KnownSymbols {
 			)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 
+		TrackedAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.TrackedAttribute);
 		TrackedAsAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.TrackedAsAttribute);
-		TrackedAsAttributeFields = TrackedAsAttribute
-			?.GetMembers()
-			.OfType<IFieldSymbol>()
-			.Where(static f => f.Name == KnownMetadataNames.TrackedAsAttributeTypeField || f.Name == KnownMetadataNames.TrackedAsAttributeInheritedField)
-			.Select(static f => f.OriginalDefinition)
-			.ToImmutableHashSet<IFieldSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IFieldSymbol>.Empty;
 
 		Tracker = comp.GetTypeByMetadataName(KnownMetadataNames.Tracker);
 		TrackerExtReplacedMethods = Tracker
@@ -122,6 +137,75 @@ internal sealed class KnownSymbols {
 				static m =>
 					m.Name == KnownMetadataNames.TrackerCountEntitiesMethod ||
 					m.Name == KnownMetadataNames.TrackerCountComponentsMethod
+			)
+			.Select(static m => m.OriginalDefinition)
+			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+
+		EntityList = comp.GetTypeByMetadataName(KnownMetadataNames.EntityList);
+		EntityListFindMethods = EntityList
+			?.GetMembers()
+			.OfType<IMethodSymbol>()
+			.Where(
+				static m =>
+					m.Name == KnownMetadataNames.EntityListFindFirstMethod ||
+					m.Name == KnownMetadataNames.EntityListFindAllMethod
+			)
+			.Select(static m => m.OriginalDefinition)
+			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+
+		Engine = comp.GetTypeByMetadataName(KnownMetadataNames.Engine);
+		NonStaticInitedEngineProperties = Engine
+			?.GetMembers()
+			.OfType<IPropertySymbol>()
+			.Where(
+				static p =>
+					p.Name == KnownMetadataNames.EngineInstanceProperty ||
+					p.Name == KnownMetadataNames.EngineGraphicsProperty ||
+					p.Name == KnownMetadataNames.EngineCommandsProperty ||
+					p.Name == KnownMetadataNames.EnginePoolerProperty
+			)
+			.Select(static p => p.OriginalDefinition)
+			.ToImmutableHashSet<IPropertySymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IPropertySymbol>.Empty;
+
+		Draw = comp.GetTypeByMetadataName(KnownMetadataNames.Draw);
+		NonStaticInitedDrawFields = Draw
+			?.GetMembers()
+			.OfType<IFieldSymbol>()
+			.Where(static f => f.Name == KnownMetadataNames.DrawParticleField || f.Name == KnownMetadataNames.DrawPixelField)
+			.Select(static f => f.OriginalDefinition)
+			.ToImmutableHashSet<IFieldSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IFieldSymbol>.Empty;
+		NonStaticInitedDrawProperties = Draw
+			?.GetMembers()
+			.OfType<IPropertySymbol>()
+			.Where(
+				static p =>
+					p.Name == KnownMetadataNames.DrawRendererProperty ||
+					p.Name == KnownMetadataNames.DrawSpriteBatchProperty ||
+					p.Name == KnownMetadataNames.DrawDefaultFontProperty
+			)
+			.Select(static p => p.OriginalDefinition)
+			.ToImmutableHashSet<IPropertySymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IPropertySymbol>.Empty;
+
+		Gfx = comp.GetTypeByMetadataName(KnownMetadataNames.Gfx);
+		NonStaticInitedGfxFields = Gfx
+			?.GetMembers()
+			.OfType<IFieldSymbol>()
+			.Where(
+				static f =>
+					f.Name != KnownMetadataNames.GfxSubtractField &&
+					f.Name != KnownMetadataNames.GfxDestinationTransparencySubtractField
+			)
+			.Select(static f => f.OriginalDefinition)
+			.ToImmutableHashSet<IFieldSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IFieldSymbol>.Empty;
+
+		VirtualContent = comp.GetTypeByMetadataName(KnownMetadataNames.VirtualContent);
+		NonStaticInitedVirtualContentMethods = VirtualContent
+			?.GetMembers()
+			.OfType<IMethodSymbol>()
+			.Where(
+				static m =>
+					m.Name == KnownMetadataNames.VirtualContentCreateTextureMethod ||
+					m.Name == KnownMetadataNames.VirtualContentCreateRenderTargetMethod
 			)
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;

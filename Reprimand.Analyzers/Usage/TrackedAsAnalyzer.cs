@@ -13,11 +13,10 @@ namespace Reprimand.Analyzers.Usage;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class TrackedAsAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+		Diagnostics.Usage.IllegalTypeDerive,
 		Diagnostics.Usage.TrackedAsIsClassOnly,
 		Diagnostics.Usage.InvalidTrackedAsType,
-		Diagnostics.Usage.UnrelatedTrackedAsType,
-		Diagnostics.Usage.TrackedAsDerivedFrom,
-		Diagnostics.Usage.TrackedAsFieldWrite
+		Diagnostics.Usage.UnrelatedTrackedAsType
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -29,8 +28,6 @@ public sealed class TrackedAsAnalyzer : DiagnosticAnalyzer {
 					return;
 				ctx.RegisterSyntaxNodeAction(c => analyzeAttribute(c, known), SyntaxKind.Attribute);
 				ctx.RegisterSymbolAction(c => analyzeNamedType(c, known), SymbolKind.NamedType);
-				if (known.TrackedAsAttributeFields.Count > 0)
-					ctx.RegisterOperationAction(c => analyzeFieldReference(c, known), OperationKind.FieldReference);
 			}
 		);
 	}
@@ -91,44 +88,20 @@ public sealed class TrackedAsAnalyzer : DiagnosticAnalyzer {
 			Location? loc = type.Locations.FirstOrDefault(static l => l.IsInSource);
 			ctx.ReportDiagnostic(
 				Diagnostic.Create(
-					Diagnostics.Usage.TrackedAsDerivedFrom,
+					Diagnostics.Usage.IllegalTypeDerive,
 					loc,
-					type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)
+					known.TrackedAsAttribute.Name
 				)
 			);
 		}
 	}
 
-	private static void analyzeFieldReference(OperationAnalysisContext ctx, KnownSymbols known) {
-		var fr = (IFieldReferenceOperation)ctx.Operation;
-		if (!known.TrackedAsAttributeFields.Contains(fr.Field.OriginalDefinition))
-			return;
-
-		// don't report on assignments on the original ctor(s)
-		if (
-			ctx.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor } method &&
-			SymbolEqualityComparer.Default.Equals(method.ContainingType, known.TrackedAsAttribute)
-		)
-			return;
-
-		if (!isWrite(fr))
-			return;
-
-		ctx.ReportDiagnostic(
-			Diagnostic.Create(
-				Diagnostics.Usage.TrackedAsFieldWrite,
-				fr.Syntax.GetLocation(),
-				fr.Field.Name
-			)
-		);
-	}
-
 	private static bool tryGetAttributedClass(
 		AttributeSyntax attr,
 		SemanticModel model,
-		System.Threading.CancellationToken ct,
-		out INamedTypeSymbol? attributedType)
-	{
+		CancellationToken ct,
+		out INamedTypeSymbol? attributedType
+	) {
 		attributedType = null;
 		if (attr.Parent is not AttributeListSyntax { Target: null } attributeList)
 			return false;
@@ -148,28 +121,5 @@ public sealed class TrackedAsAnalyzer : DiagnosticAnalyzer {
 		while (op is IConversionOperation conv)
 			op = conv.Operand;
 		return op is ITypeOfOperation @typeof ? @typeof.TypeOperand : null;
-	}
-
-	private static bool isWrite(IFieldReferenceOperation fr) {
-		IOperation curr = fr;
-
-		// go only through wrappers which can surround an lvalue
-		while (curr.Parent is IParenthesizedOperation or IConversionOperation or ITupleOperation)
-			curr = curr.Parent;
-
-		switch (curr.Parent) {
-		case IAssignmentOperation asg when ReferenceEquals(asg.Target, curr):
-			return true;
-		case IIncrementOrDecrementOperation incr when ReferenceEquals(incr.Target, curr):
-			return true;
-		case IArgumentOperation arg when ReferenceEquals(arg.Value, curr) && arg.Parameter?.RefKind is RefKind.Ref or RefKind.Out:
-			return true;
-		}
-
-		// reject ref aliases and pointer aliases since you can write through them later
-		SyntaxNode sx = fr.Syntax;
-		while (sx.Parent is ParenthesizedExpressionSyntax)
-			sx = sx.Parent;
-		return sx.Parent is RefExpressionSyntax || sx.Parent is PrefixUnaryExpressionSyntax prefix && prefix.IsKind(SyntaxKind.AddressOfExpression);
 	}
 }

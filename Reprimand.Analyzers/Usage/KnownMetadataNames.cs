@@ -4,6 +4,8 @@
 namespace Reprimand.Analyzers.Usage;
 
 internal static class KnownMetadataNames {
+	public const string DontUseInStaticCtorAttribute = "Reprimand.CodeAnalysis.DontUseInStaticCtorAttribute";
+
 	public const string Hook = "MonoMod.RuntimeDetour.Hook";
 	public const string ILHook = "MonoMod.RuntimeDetour.ILHook";
 	public const string NativeHook = "MonoMod.RuntimeDetour.NativeHook";
@@ -16,9 +18,8 @@ internal static class KnownMetadataNames {
 	public const string Component = "Monocle.Component";
 	public const string SceneAsMethod = "SceneAs";
 
+	public const string TrackedAttribute = "Monocle.Tracked"; // not a typo, the type doesn't have Attribute in its name for some reason
 	public const string TrackedAsAttribute = "Monocle.TrackedAsAttribute";
-	public const string TrackedAsAttributeTypeField = "TrackedAsType";
-	public const string TrackedAsAttributeInheritedField = "Inherited";
 
 	public const string Tracker = "Monocle.Tracker";
 	public const string TrackerGetEntityMethod = "GetEntity";
@@ -35,4 +36,29 @@ internal static class KnownMetadataNames {
 
 	public const string TrackerCountEntitiesMethod = "CountEntities";
 	public const string TrackerCountComponentsMethod = "CountComponents";
+
+	public const string EntityList = "Monocle.EntityList";
+	public const string EntityListFindFirstMethod = "FindFirst";
+	public const string EntityListFindAllMethod = "FindAll";
+
+	public const string Engine = "Monocle.Engine";
+	public const string EngineInstanceProperty = "Instance";
+	public const string EngineGraphicsProperty = "Graphics";
+	public const string EngineCommandsProperty = "Commands";
+	public const string EnginePoolerProperty = "Pooler";
+
+	public const string Draw = "Monocle.Draw";
+	public const string DrawParticleField = "Particle";
+	public const string DrawPixelField = "Pixel";
+	public const string DrawRendererProperty = "Renderer";
+	public const string DrawSpriteBatchProperty = "SpriteBatch";
+	public const string DrawDefaultFontProperty = "DefaultFont";
+
+	public const string Gfx = "Celeste.GFX";
+	public const string GfxSubtractField = "Subtract";
+	public const string GfxDestinationTransparencySubtractField = "DestinationTransparencySubtract";
+
+	public const string VirtualContent = "Monocle.VirtualContent";
+	public const string VirtualContentCreateTextureMethod = "CreateTexture";
+	public const string VirtualContentCreateRenderTargetMethod = "CreateRenderTarget";
 }
