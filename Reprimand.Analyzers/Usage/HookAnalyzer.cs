@@ -49,7 +49,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		var @ref = (IEventReferenceOperation)asg.EventReference;
 		IEventSymbol sym = @ref.Event;
 		INamespaceSymbol ns = sym.ContainingNamespace;
-		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } inner; ns = inner);
+		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent);
 		if (ns.Name is "On" or "IL")
 			maybeReportDelegateValue(ctx, asg.HandlerValue, Diagnostics.Usage.NonStaticHookMethod, Diagnostics.Usage.HookStaticLambda);
 	}
