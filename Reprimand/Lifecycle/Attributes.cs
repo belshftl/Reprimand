@@ -19,7 +19,14 @@ internal interface IOnLoadLifecycleAttribute {
 /// </para>
 /// </summary>
 /// <remarks>
+/// <para>
+/// For convenience's sake for the overwhelmingly common usecase, on-load lifecycle attribute
+/// invocations get a detour ID set automatically; this is implemented under the hood using a
+/// <see cref="global::MonoMod.RuntimeDetour.DetourConfigContext"/>.
+/// </para>
+/// <para>
 /// See <see cref="OnLoadOneshotAttribute"/> if you don't have an undo counterpart.
+/// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class OnLoadAttribute : Attribute, IOnLoadLifecycleAttribute {
@@ -60,6 +67,11 @@ public sealed class OnLoadAttribute : Attribute, IOnLoadLifecycleAttribute {
 /// This is an on-load lifecycle attribute.
 /// </para>
 /// </summary>
+/// <remarks>
+/// For convenience's sake for the overwhelmingly common usecase, on-load lifecycle attribute
+/// invocations get a detour ID set automatically; this is implemented under the hood using a
+/// <see cref="global::MonoMod.RuntimeDetour.DetourConfigContext"/>.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class OnLoadOneshotAttribute : Attribute, IOnLoadLifecycleAttribute {
 	/// <summary>
@@ -82,8 +94,9 @@ public sealed class OnLoadOneshotAttribute : Attribute, IOnLoadLifecycleAttribut
 /// </summary>
 /// <remarks>
 /// <para>
-/// While this technically works for required dependencies too, a required dependency being missing
-/// already prevents the mod from being loaded, so using this for a required dependency would be redundant.
+/// For convenience's sake for the overwhelmingly common usecase, on-load lifecycle attribute
+/// invocations get a detour ID set automatically; this is implemented under the hood using a
+/// <see cref="global::MonoMod.RuntimeDetour.DetourConfigContext"/>.
 /// </para>
 /// <para>
 /// See <see cref="OnLoadIfOptionalDepOneshotAttribute"/> if you don't have an undo counterpart.
@@ -155,8 +168,9 @@ public sealed class OnLoadIfOptionalDepAttribute : Attribute, IOnLoadLifecycleAt
 /// </para>
 /// </summary>
 /// <remarks>
-/// While this technically works for required dependencies too, a required dependency being missing
-/// already prevents the mod from being loaded, so using this for a required dependency would be redundant.
+/// For convenience's sake for the overwhelmingly common usecase, on-load lifecycle attribute
+/// invocations get a detour ID set automatically; this is implemented under the hood using a
+/// <see cref="global::MonoMod.RuntimeDetour.DetourConfigContext"/>.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class OnLoadIfOptionalDepOneshotAttribute : Attribute, IOnLoadLifecycleAttribute {

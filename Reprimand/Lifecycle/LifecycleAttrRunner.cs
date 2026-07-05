@@ -27,7 +27,20 @@ public static class LifecycleAttrRunner {
 	/// <summary>
 	/// Runs the on-load lifecycle attribute methods in a given assembly.
 	/// </summary>
-	public static LifecycleAttrCallRecord OnLoad(Assembly asm) {
+	/// <param name="asm">
+	/// Assembly to find and run the lifecycle attribute methods in.
+	/// </param>
+	/// <param name="detourId">
+	/// MonoMod <see cref="global::MonoMod.RuntimeDetour.DetourConfigContext"/> detour ID to set for
+	/// the invocations.
+	/// </param>
+	/// <remarks>
+	/// Usually, <paramref name="detourId"/> should be some identifier-friendly form of your mod's name,
+	/// for example <c>"MyAwesomeHelper"</c>; what matters is that, after a public release, you don't
+	/// change it without incrementing the major version of your mod, since other mods may start relying
+	/// on it.
+	/// </remarks>
+	public static LifecycleAttrCallRecord OnLoad(Assembly asm, string detourId) {
 		List<MethodInfo> undoList = new();
 		foreach ((MethodInfo m, IOnLoadLifecycleAttribute a) in getOnLoadMethods(asm, typeof(OnLoadAttribute), typeof(OnLoadIfOptionalDepAttribute))) {
 			if (m.DeclaringType is null) {
@@ -40,16 +53,16 @@ public static class LifecycleAttrRunner {
 			}
 			switch (a) {
 			case OnLoadAttribute onLoad:
-				addUndoAndInvoke(m.DeclaringType.FullName + '.' + m.Name, m.DeclaringType, onLoad.UndoMethod, undoList, () => invokeParamless(m));
+				addUndoAndInvoke(m.DeclaringType.FullName + '.' + m.Name, m.DeclaringType, onLoad.UndoMethod, undoList, () => invokeParamless(m, detourId));
 				break;
 			case OnLoadOneshotAttribute:
-				invokeParamless(m);
+				invokeParamless(m, detourId);
 				break;
 			case OnLoadIfOptionalDepAttribute opt:
-				addUndoAndInvoke(m.DeclaringType.FullName + '.' + m.Name, m.DeclaringType, opt.UndoMethod, undoList, () => invokeOptDep(m, opt.Wanted));
+				addUndoAndInvoke(m.DeclaringType.FullName + '.' + m.Name, m.DeclaringType, opt.UndoMethod, undoList, () => invokeOptDep(m, opt.Wanted, detourId));
 				break;
 			case OnLoadIfOptionalDepOneshotAttribute optOneshot:
-				invokeOptDep(m, optOneshot.Wanted);
+				invokeOptDep(m, optOneshot.Wanted, detourId);
 				break;
 			default:
 				throw new InternalStateException("IOnLoadLifecycleAttribute implementor doesn't match any expected known types");
@@ -62,10 +75,25 @@ public static class LifecycleAttrRunner {
 	/// <summary>
 	/// Runs the on-load lifecycle attribute methods in the assembly of a given <see cref="EverestModule"/>.
 	/// </summary>
+	/// <param name="m">
+	/// Module whose assembly should be searched to find and run the lifecycle attributes in.
+	/// </param>
+	/// <param name="detourId">
+	/// MonoMod <see cref="global::MonoMod.RuntimeDetour.DetourConfigContext"/> detour ID to set for
+	/// the invocations.
+	/// </param>
 	/// <remarks>
-	/// Convenience overload for <see cref="OnLoad(Assembly)"/>.
+	/// <para>
+	/// Usually, <paramref name="detourId"/> should be some identifier-friendly form of your mod's name,
+	/// for example <c>"MyAwesomeHelper"</c>; what matters is that, after a public release, you don't
+	/// change it without incrementing the major version of your mod, since other mods may start relying
+	/// on it.
+	/// </para>
+	/// <para>
+	/// Convenience overload for <see cref="OnLoad(Assembly, string)"/>.
+	/// </para>
 	/// </remarks>
-	public static LifecycleAttrCallRecord OnLoad(EverestModule m) => OnLoad(m.GetType().Assembly);
+	public static LifecycleAttrCallRecord OnLoad(EverestModule m, string detourId) => OnLoad(m.GetType().Assembly, detourId);
 
 	/// <summary>
 	/// Runs the undo methods for the on-load lifecycle attribute method calls recorded in a
@@ -159,26 +187,29 @@ public static class LifecycleAttrRunner {
 		}
 	}
 
-	private static void invokeParamless(MethodInfo m) {
+	private static void invokeParamless(MethodInfo m, string detourId) {
 		if (m.GetParameters().Length != 0) {
 			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in more than 0 parameters; not calling it");
 		} else {
 			Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}'");
-			m.Invoke(null, null);
+			using (new global::MonoMod.RuntimeDetour.DetourConfigContext(new global::MonoMod.RuntimeDetour.DetourConfig(detourId)).Use())
+				m.Invoke(null, null);
 		}
 	}
 
-	private static void invokeOptDep(MethodInfo m, EverestModuleMetadata wanted) {
+	private static void invokeOptDep(MethodInfo m, EverestModuleMetadata wanted, string detourId) {
 		ParameterInfo[] @params = m.GetParameters();
 		if (@params.Length != 0)
 			if (@params.Length != 1 || @params[0].ParameterType.IsByRef || @params[0].ParameterType.IsAssignableFrom(typeof(EverestModule)))
 				Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in something either than 0 parameters or 1 parameter of type EverestModule; not calling it");
 		if (Everest.Loader.TryGetDependency(wanted, out EverestModule mod)) {
 			Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}'");
-			if (@params.Length == 0)
-				m.Invoke(null, null);
-			else
-				m.Invoke(null, [mod]);
+			using (new global::MonoMod.RuntimeDetour.DetourConfigContext(new global::MonoMod.RuntimeDetour.DetourConfig(detourId)).Use()) {
+				if (@params.Length == 0)
+					m.Invoke(null, null);
+				else
+					m.Invoke(null, [mod]);
+			}
 		}
 	}
 }

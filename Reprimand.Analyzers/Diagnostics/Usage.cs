@@ -28,7 +28,7 @@ internal static class Usage {
 	public static readonly DiagnosticDescriptor IllegalStaticCtorFieldOrPropertyAccess = new(
 		id: "RM0202",
 		title: "Field/property should not be accessed in a static constructor",
-		messageFormat: "Field/property '{0}' should not be accessed in a static constructor or static field/property initializer as it may still be null/uninitialized at that point; for an alternative, consider Lazy<T> or hand-rolled lazy initialization with `??=`",
+		messageFormat: "Field/property '{0}' should not be accessed in a static constructor or static field/property initializer as it may non-deterministically still be null/uninitialized at that point; for an alternative, consider Lazy<T> or hand-rolled lazy initialization with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true
@@ -37,7 +37,7 @@ internal static class Usage {
 	public static readonly DiagnosticDescriptor IllegalStaticCtorMethodCall = new(
 		id: "RM0203",
 		title: "Method should not be called in a static constructor",
-		messageFormat: "Method '{0}' should not be called in a static constructor or static field/property initializer as state it relies on may still be null/uninitialized at that point; for an alternative, consider Lazy<T> or hand-rolled lazy initialization with `??=`",
+		messageFormat: "Method '{0}' should not be called in a static constructor or static field/property initializer as state it relies on may non-deterministically still be null/uninitialized at that point; for an alternative, consider Lazy<T> or hand-rolled lazy initialization with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true
@@ -103,11 +103,11 @@ internal static class Usage {
 		isEnabledByDefault: true
 	);
 
-	public static readonly DiagnosticDescriptor HookWithoutDetourID = new(
+	public static readonly DiagnosticDescriptor HookWithoutDetourId = new(
 		id: "RM0210",
 		title: "Declare hooks under detour IDs",
 		messageFormat:
-		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods, so not using one will create a huge pain for someone else that may want to take priority over your hooks",
+		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true

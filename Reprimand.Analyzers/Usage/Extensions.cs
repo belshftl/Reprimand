@@ -20,6 +20,12 @@ internal static class Extensions {
 			return false;
 		}
 
+		public bool Implements([NotNullWhen(true)] INamedTypeSymbol? iface) {
+			if (type is null || iface is null)
+				return false;
+			return type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i.OriginalDefinition, iface.OriginalDefinition));
+		}
+
 		public bool IsHook(KnownSymbols known) {
 			if (type is null)
 				return false;

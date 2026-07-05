@@ -8,11 +8,14 @@ namespace Reprimand.Analyzers.Usage;
 
 internal sealed class KnownSymbols {
 	public INamedTypeSymbol? DontUseInStaticCtorAttribute { get; }
+	public INamedTypeSymbol? IOnLoadLifecycleAttribute { get; }
 
 	public INamedTypeSymbol? Hook { get; }
 	public INamedTypeSymbol? ILHook { get; }
 	public INamedTypeSymbol? NativeHook { get; }
 	public INamedTypeSymbol? DetourConfig { get; }
+	public INamedTypeSymbol? DetourContext { get; }
+	public INamedTypeSymbol? DetourConfigContext { get; }
 	public INamedTypeSymbol? ILCursor { get; }
 	public INamedTypeSymbol? ILContext { get; }
 	public INamedTypeSymbol? Instruction { get; }
@@ -20,6 +23,8 @@ internal sealed class KnownSymbols {
 	public ImmutableHashSet<IMethodSymbol> RemoveInstructionMethods { get; }
 	public ImmutableHashSet<IMethodSymbol> GotoMethods { get; }
 	public ImmutableHashSet<ISymbol> InstructionMembers { get; }
+
+	public IMethodSymbol? DetourContextParamlessUseMethod { get; }
 
 	public INamedTypeSymbol? Entity { get; }
 	public INamedTypeSymbol? Component { get; }
@@ -51,11 +56,14 @@ internal sealed class KnownSymbols {
 
 	public KnownSymbols(Compilation comp) {
 		DontUseInStaticCtorAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.DontUseInStaticCtorAttribute);
+		IOnLoadLifecycleAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.IOnLoadLifecycleAttribute);
 
 		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
 		ILHook = comp.GetTypeByMetadataName(KnownMetadataNames.ILHook);
 		NativeHook = comp.GetTypeByMetadataName(KnownMetadataNames.NativeHook);
 		DetourConfig = comp.GetTypeByMetadataName(KnownMetadataNames.DetourConfig);
+		DetourContext = comp.GetTypeByMetadataName(KnownMetadataNames.DetourContext);
+		DetourConfigContext = comp.GetTypeByMetadataName(KnownMetadataNames.DetourConfigContext);
 		ILCursor = comp.GetTypeByMetadataName(KnownMetadataNames.ILCursor);
 		ILContext = comp.GetTypeByMetadataName(KnownMetadataNames.ILContext);
 		Instruction = comp.GetTypeByMetadataName(KnownMetadataNames.Instruction);
@@ -83,6 +91,12 @@ internal sealed class KnownSymbols {
 			.Where(static m => m.Name is "OpCode" or "Operand")
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet(SymbolEqualityComparer.Default) ?? ImmutableHashSet<ISymbol>.Empty;
+
+		DetourContextParamlessUseMethod = DetourContext
+			?.GetMembers()
+			.OfType<IMethodSymbol>()
+			.FirstOrDefault(static m => m.Name == KnownMetadataNames.DetourConfigContextUseMethod && m.Parameters.Length == 0)
+			?.OriginalDefinition;
 
 		Entity = comp.GetTypeByMetadataName(KnownMetadataNames.Entity);
 		Component = comp.GetTypeByMetadataName(KnownMetadataNames.Component);

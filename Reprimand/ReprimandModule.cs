@@ -7,6 +7,8 @@ using Reprimand.Lifecycle;
 namespace Reprimand;
 
 internal sealed class ReprimandModule : EverestModule {
+	public const string DetourId = "Reprimand";
+
 	private static ReprimandModule? instanceBacking = null;
 	public static ReprimandModule Instance => Volatile.Read(ref instanceBacking) ?? throw new InvalidOperationException("the module has not been instantiated yet");
 	public volatile bool Active;
@@ -24,7 +26,7 @@ internal sealed class ReprimandModule : EverestModule {
 	}
 
 	public override void Load() {
-		onLoadCallRecord = LifecycleAttrRunner.OnLoad(this);
+		onLoadCallRecord = LifecycleAttrRunner.OnLoad(this, DetourId);
 		Active = true;
 	}
 
