@@ -9,6 +9,7 @@ namespace Reprimand.Analyzers.Usage;
 internal sealed class KnownSymbols {
 	public INamedTypeSymbol? DontUseInStaticCtorAttribute { get; }
 	public INamedTypeSymbol? IOnLoadLifecycleAttribute { get; }
+	public INamedTypeSymbol? HookMethodAttribute { get; }
 
 	public INamedTypeSymbol? Hook { get; }
 	public INamedTypeSymbol? ILHook { get; }
@@ -57,6 +58,7 @@ internal sealed class KnownSymbols {
 	public KnownSymbols(Compilation comp) {
 		DontUseInStaticCtorAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.DontUseInStaticCtorAttribute);
 		IOnLoadLifecycleAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.IOnLoadLifecycleAttribute);
+		HookMethodAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.HookMethodAttribute);
 
 		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
 		ILHook = comp.GetTypeByMetadataName(KnownMetadataNames.ILHook);

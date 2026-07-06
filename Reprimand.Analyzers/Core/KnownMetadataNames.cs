@@ -3,7 +3,11 @@
 
 namespace Reprimand.Analyzers.Core;
 
-internal static class KnownTypeMetadataNames {
+internal static class KnownMetadataNames {
+	public const string ReprimandCelesteNs = "Reprimand.Celeste";
+	public const string ReprimandLifecycleNs = "Reprimand.Lifecycle";
+	public const string ReprimandMonoModNs = "Reprimand.MonoMod";
+
 	public const string OnLoadAttribute = "Reprimand.Lifecycle.OnLoadAttribute";
 	public const string OnLoadOneshotAttribute = "Reprimand.Lifecycle.OnLoadOneshotAttribute";
 	public const string OnLoadIfOptionalDepAttribute = "Reprimand.Lifecycle.OnLoadIfOptionalDepAttribute";

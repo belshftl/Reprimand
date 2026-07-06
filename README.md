@@ -1,7 +1,7 @@
 # Reprimand
 
 A bunch of things that a decent mod loader should really be doing, but [Everest](https://everestapi.github.io) doesn't for some reason. Includes:
-- a library for code mods
+- a library/mini-framework for code mods
 - documentation on Celeste for codemodders
 - miscellaneous utilities
 
@@ -12,7 +12,7 @@ under a combined project name.
 ---
 
 ## Current library features
-- a more comprehensive roslyn analyzer catching many mistakes or bad patterns; currently already at 35 unique diagnostics and counting
+- a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 38 unique diagnostics and counting
 - `[OnLoad]` / etc. lifecycle attributes with deterministic call order and undo tied to the same attribute for clean reverse-registration-order cleanup
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
 - API to be able to bind the backbuffer without clearing it, even if the `RenderTargetUsage` isn't set to `PreserveContents`
@@ -23,6 +23,7 @@ under a combined project name.
 
 ## Current other mod features
 - a fix for the crash that happens when you reload the current map while inside a dream block
+- miscellaneous basegame bugfixes
 
 ---
 

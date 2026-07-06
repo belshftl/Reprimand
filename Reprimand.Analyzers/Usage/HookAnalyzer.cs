@@ -17,6 +17,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 	}
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+		Diagnostics.Usage.UnmarkedHookMethod,
 		Diagnostics.Usage.NonStaticHookMethod,
 		Diagnostics.Usage.HookStaticLambda,
 		Diagnostics.Usage.NonStaticEmitDelegateMethod,
@@ -30,7 +31,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static ctx => {
 				KnownSymbols known = new(ctx.Compilation);
-				ctx.RegisterOperationAction(analyzeEventAssignment, OperationKind.EventAssignment);
+				ctx.RegisterOperationAction(c => analyzeEventAssignment(c, known), OperationKind.EventAssignment);
 				ctx.RegisterOperationAction(c => analyzeObjectCreation(c, known), OperationKind.ObjectCreation);
 				ctx.RegisterOperationAction(c => analyzeInvocation(c, known), OperationKind.Invocation);
 				ctx.RegisterOperationAction(
@@ -44,14 +45,14 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		);
 	}
 
-	private static void analyzeEventAssignment(OperationAnalysisContext ctx) {
+	private static void analyzeEventAssignment(OperationAnalysisContext ctx, KnownSymbols known) {
 		var asg = (IEventAssignmentOperation)ctx.Operation;
 		var @ref = (IEventReferenceOperation)asg.EventReference;
 		IEventSymbol sym = @ref.Event;
 		INamespaceSymbol ns = sym.ContainingNamespace;
 		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent);
 		if (ns.Name is "On" or "IL")
-			maybeReportDelegateValue(ctx, asg.HandlerValue, Diagnostics.Usage.NonStaticHookMethod, Diagnostics.Usage.HookStaticLambda);
+			maybeReportDelegateValue(ctx, asg.HandlerValue, isHook: true, known);
 	}
 
 	private static void analyzeObjectCreation(OperationAnalysisContext ctx, KnownSymbols known) {
@@ -60,7 +61,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 			return;
 		IArgumentOperation? delegateArg = findDelegateArgument(creat.Arguments);
 		if (delegateArg is not null)
-			maybeReportDelegateArg(ctx, delegateArg, Diagnostics.Usage.NonStaticHookMethod, Diagnostics.Usage.HookStaticLambda);
+			maybeReportDelegateArg(ctx, delegateArg, isHookMethod: true, known);
 	}
 
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
@@ -68,7 +69,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		if (known.EmitDelegateMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
 			IArgumentOperation? delegateArg = findDelegateArgument(inv.Arguments);
 			if (delegateArg is not null)
-				maybeReportDelegateArg(ctx, delegateArg, Diagnostics.Usage.NonStaticEmitDelegateMethod, Diagnostics.Usage.EmitDelegateStaticLambda);
+				maybeReportDelegateArg(ctx, delegateArg, isHookMethod: false, known);
 		} else if (known.RemoveInstructionMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
 		} else if (known.GotoMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
@@ -77,6 +78,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 			ITypeSymbol? receiverType = inv.Instance?.Type;
 			if (receiverType is null || !isInstructionListLike(receiverType, known))
 				return;
+			// TODO move out these constants
 			if (inv.TargetMethod.Name is "Add" or "AddRange" or "Clear" or "Insert" or "InsertRange" or "Remove" or "RemoveAt" or "RemoveRange")
 				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
 		}
@@ -121,6 +123,7 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 			return false;
 		if (!SymbolEqualityComparer.Default.Equals(named.TypeArguments[0], instructionType))
 			return false;
+		// TODO move out these constants
 		return named.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) is
 			"global::System.Collections.Generic.ICollection<T>" or
 			"global::System.Collections.Generic.IList<T>" or
@@ -135,33 +138,34 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 		return null;
 	}
 
-	private static void maybeReportDelegateArg(OperationAnalysisContext ctx, IArgumentOperation arg, DiagnosticDescriptor nonStaticDd, DiagnosticDescriptor staticLambdaDd) =>
-		maybeReportDelegateValue(ctx, arg.Value, nonStaticDd, staticLambdaDd);
+	private static void maybeReportDelegateArg(OperationAnalysisContext ctx, IArgumentOperation arg, bool isHookMethod, KnownSymbols known) =>
+		maybeReportDelegateValue(ctx, arg.Value, isHookMethod, known);
 
-	private static void maybeReportDelegateValue(OperationAnalysisContext ctx, IOperation op, DiagnosticDescriptor nonStaticDd, DiagnosticDescriptor staticLambdaDd) {
-		switch (classifyDelegateExpression(op)) {
+	private static void maybeReportDelegateValue(OperationAnalysisContext ctx, IOperation op, bool isHook, KnownSymbols known) {
+		(IMethodSymbol? m, DelegateTargetKind kind) = classifyDelegateExpression(op);
+		if (isHook && m is not null && !m.OriginalDefinition.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.HookMethodAttribute)))
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.UnmarkedHookMethod, op.Syntax.GetLocation()));
+		switch (kind) {
 		case DelegateTargetKind.PlainStaticMethodGroup:
 			return;
 		case DelegateTargetKind.StaticLambda:
-			ctx.ReportDiagnostic(Diagnostic.Create(staticLambdaDd, op.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(isHook ? Diagnostics.Usage.HookStaticLambda : Diagnostics.Usage.EmitDelegateStaticLambda, op.Syntax.GetLocation()));
 			return;
 		case DelegateTargetKind.NonStaticOrUnknown:
-			ctx.ReportDiagnostic(Diagnostic.Create(nonStaticDd, op.Syntax.GetLocation()));
+			ctx.ReportDiagnostic(Diagnostic.Create(isHook ? Diagnostics.Usage.NonStaticHookMethod : Diagnostics.Usage.NonStaticEmitDelegateMethod, op.Syntax.GetLocation()));
 			return;
 		}
 	}
 
-	private static DelegateTargetKind classifyDelegateExpression(IOperation op) {
+	private static (IMethodSymbol? m, DelegateTargetKind kind) classifyDelegateExpression(IOperation op) {
 		while (op is IConversionOperation conv && conv.IsImplicit)
 			op = conv.Operand;
 		if (op is IDelegateCreationOperation del)
 			return classifyDelegateExpression(del.Target);
 		if (op is IMethodReferenceOperation methodRef)
-			return methodRef.Method.IsStatic ? DelegateTargetKind.PlainStaticMethodGroup : DelegateTargetKind.NonStaticOrUnknown;
+			return (methodRef.Method, methodRef.Method.IsStatic ? DelegateTargetKind.PlainStaticMethodGroup : DelegateTargetKind.NonStaticOrUnknown);
 		if (op is IAnonymousFunctionOperation anon)
-			return anon.Symbol.IsStatic ? DelegateTargetKind.StaticLambda : DelegateTargetKind.NonStaticOrUnknown;
-		if (op.Type?.TypeKind == TypeKind.Delegate)
-			return DelegateTargetKind.NonStaticOrUnknown;
-		return DelegateTargetKind.NonStaticOrUnknown;
+			return (anon.Symbol, anon.Symbol.IsStatic ? DelegateTargetKind.StaticLambda : DelegateTargetKind.NonStaticOrUnknown);
+		return (null, DelegateTargetKind.NonStaticOrUnknown);
 	}
 }

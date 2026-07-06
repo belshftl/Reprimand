@@ -3,8 +3,8 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Reprimand.Analyzers.Core;
 
@@ -24,7 +24,7 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static ctx => {
-				KnownTypes known = new(ctx.Compilation);
+				KnownSymbols known = new(ctx.Compilation);
 				if (
 					known.OnLoadAttribute is null ||
 					known.OnLoadOneshotAttribute is null ||
@@ -38,7 +38,7 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		);
 	}
 
-	private static void analyzeMethod(SymbolAnalysisContext ctx, KnownTypes known) {
+	private static void analyzeMethod(SymbolAnalysisContext ctx, KnownSymbols known) {
 		var sym = (IMethodSymbol)ctx.Symbol;
 		AttributeData? attr = null;
 		bool isDepConditional = false;
