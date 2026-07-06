@@ -73,7 +73,7 @@ internal static class Core {
 	public static readonly DiagnosticDescriptor SuggestedGlobalUsingNs = new(
 		id: "RM0008",
 		title: "Consider making this `using` globally implicit",
-		messageFormat: "Consider adding '{0}' as a global using so you don't have to add it manually every time; add a `<Using>` in your .csproj or a `global using` in a dedicated file",
+		messageFormat: "'{0}' is a very commonly used Reprimand namespace; consider adding it as a global using so you don't have to include it manually every time",
 		category: "Core",
 		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true

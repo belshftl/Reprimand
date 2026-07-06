@@ -13,7 +13,8 @@ namespace Reprimand.Analyzers.Usage;
 public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 		Diagnostics.Usage.IllegalStaticCtorFieldOrPropertyAccess,
-		Diagnostics.Usage.IllegalStaticCtorMethodCall
+		Diagnostics.Usage.IllegalStaticCtorStaticMethodCall,
+		Diagnostics.Usage.IllegalStaticCtorObjectInstantiation
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -24,13 +25,15 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 				ctx.RegisterOperationAction(c => analyzeFieldReference(c, known), OperationKind.FieldReference);
 				ctx.RegisterOperationAction(c => analyzePropertyReference(c, known), OperationKind.PropertyReference);
 				ctx.RegisterOperationAction(c => analyzeInvocation(c, known), OperationKind.Invocation);
+				ctx.RegisterOperationAction(c => analyzeObjectCreation(c, known), OperationKind.ObjectCreation);
 			}
 		);
 	}
 
 	private static void analyzeFieldReference(OperationAnalysisContext ctx, KnownSymbols known) {
 		var fr = (IFieldReferenceOperation)ctx.Operation;
-		if (fr.IsDeclaration ||
+		if (
+			fr.IsDeclaration ||
 			!(
 				fr.Field.OriginalDefinition.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.DontUseInStaticCtorAttribute)) ||
 				known.NonStaticInitedDrawFields.Contains(fr.Field.OriginalDefinition) ||
@@ -39,22 +42,7 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 		)
 			return;
 
-		bool report = ctx.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor };
-		if (!report) {
-			for (IOperation? ancestor = fr.Parent; ancestor is not null; ancestor = ancestor.Parent) {
-				if (ancestor is IAnonymousFunctionOperation or ILocalFunctionOperation or INameOfOperation)
-					return;
-				if (ancestor is IFieldInitializerOperation fieldInitializer) {
-					report = fieldInitializer.InitializedFields.Any(static f => f.IsStatic);
-					break;
-				}
-				if (ancestor is IPropertyInitializerOperation propertyInitializer) {
-					report = propertyInitializer.InitializedProperties.Any(static p => p.IsStatic);
-					break;
-				}
-			}
-		}
-		if (!report)
+		if (!shouldReport(fr, ctx.ContainingSymbol))
 			return;
 
 		Location? loc = fr.Syntax switch {
@@ -83,22 +71,7 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 		)
 			return;
 
-		bool report = ctx.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor };
-		if (!report) {
-			for (IOperation? ancestor = pr.Parent; ancestor is not null; ancestor = ancestor.Parent) {
-				if (ancestor is IAnonymousFunctionOperation or ILocalFunctionOperation or INameOfOperation)
-					return;
-				if (ancestor is IFieldInitializerOperation fieldInitializer) {
-					report = fieldInitializer.InitializedFields.Any(static f => f.IsStatic);
-					break;
-				}
-				if (ancestor is IPropertyInitializerOperation propertyInitializer) {
-					report = propertyInitializer.InitializedProperties.Any(static p => p.IsStatic);
-					break;
-				}
-			}
-		}
-		if (!report)
+		if (!shouldReport(pr, ctx.ContainingSymbol))
 			return;
 
 		Location? loc = pr.Syntax switch {
@@ -120,6 +93,7 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 		var inv = (IInvocationOperation)ctx.Operation;
 		IMethodSymbol method = inv.TargetMethod.ReducedFrom ?? inv.TargetMethod;
 		if (
+			!method.IsStatic ||
 			!(
 				method.OriginalDefinition.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.DontUseInStaticCtorAttribute)) ||
 				known.NonStaticInitedVirtualContentMethods.Contains(method.OriginalDefinition)
@@ -127,22 +101,7 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 		)
 			return;
 
-		bool report = ctx.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor };
-		if (!report) {
-			for (IOperation? ancestor = inv.Parent; ancestor is not null; ancestor = ancestor.Parent) {
-				if (ancestor is IAnonymousFunctionOperation or ILocalFunctionOperation or INameOfOperation)
-					return;
-				if (ancestor is IFieldInitializerOperation fieldInitializer) {
-					report = fieldInitializer.InitializedFields.Any(static f => f.IsStatic);
-					break;
-				}
-				if (ancestor is IPropertyInitializerOperation propertyInitializer) {
-					report = propertyInitializer.InitializedProperties.Any(static p => p.IsStatic);
-					break;
-				}
-			}
-		}
-		if (!report)
+		if (!shouldReport(inv, ctx.ContainingSymbol))
 			return;
 
 		Location? loc = inv.Syntax switch {
@@ -153,10 +112,53 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 		};
 		ctx.ReportDiagnostic(
 			Diagnostic.Create(
-				Diagnostics.Usage.IllegalStaticCtorMethodCall,
+				Diagnostics.Usage.IllegalStaticCtorStaticMethodCall,
 				loc,
 				method.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
 			)
 		);
+	}
+
+	private static void analyzeObjectCreation(OperationAnalysisContext ctx, KnownSymbols known) {
+		var creat = (IObjectCreationOperation)ctx.Operation;
+		ITypeSymbol? type = creat.Type;
+		if (
+			type is null ||
+			!(
+				type.IsOrDerivesFrom(known.VirtualRenderTarget) ||
+				type.IsOrDerivesFrom(known.VirtualTexture)
+			)
+		)
+			return;
+
+		if (!shouldReport(creat, ctx.ContainingSymbol))
+			return;
+
+		ctx.ReportDiagnostic(
+			Diagnostic.Create(
+				Diagnostics.Usage.IllegalStaticCtorObjectInstantiation,
+				creat.Syntax.GetLocation(),
+				type.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+			)
+		);
+	}
+
+	private static bool shouldReport(IOperation self, ISymbol containingSymbol) {
+		bool report = containingSymbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor };
+		if (!report) {
+			for (IOperation? ancestor = self.Parent; ancestor is not null; ancestor = ancestor.Parent) {
+				if (ancestor is IAnonymousFunctionOperation or ILocalFunctionOperation or INameOfOperation)
+					return false;
+				if (ancestor is IFieldInitializerOperation fieldInitializer) {
+					report = fieldInitializer.InitializedFields.Any(static f => f.IsStatic);
+					break;
+				}
+				if (ancestor is IPropertyInitializerOperation propertyInitializer) {
+					report = propertyInitializer.InitializedProperties.Any(static p => p.IsStatic);
+					break;
+				}
+			}
+		}
+		return report;
 	}
 }

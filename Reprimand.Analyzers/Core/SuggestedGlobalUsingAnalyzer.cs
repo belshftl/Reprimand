@@ -27,6 +27,8 @@ public sealed class SuggestedGlobalUsingAnalyzer : DiagnosticAnalyzer {
 
 	private static void analyzeUsingDirective(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
 		var sx = (UsingDirectiveSyntax)ctx.Node;
+		if (sx.GlobalKeyword.RawKind > 0) // global using ...;
+			return;
 		if (sx.Alias is not null)
 			return; // TODO
 		ISymbol? sym = ctx.SemanticModel.GetSymbolInfo(sx.Name!, ctx.CancellationToken).Symbol;

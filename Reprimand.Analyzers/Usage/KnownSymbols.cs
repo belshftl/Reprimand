@@ -55,6 +55,9 @@ internal sealed class KnownSymbols {
 	public INamedTypeSymbol? VirtualContent { get; }
 	public ImmutableHashSet<IMethodSymbol> NonStaticInitedVirtualContentMethods { get; }
 
+	public INamedTypeSymbol? VirtualRenderTarget { get; }
+	public INamedTypeSymbol? VirtualTexture { get; }
+
 	public KnownSymbols(Compilation comp) {
 		DontUseInStaticCtorAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.DontUseInStaticCtorAttribute);
 		IOnLoadLifecycleAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.IOnLoadLifecycleAttribute);
@@ -225,5 +228,8 @@ internal sealed class KnownSymbols {
 			)
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+
+		VirtualRenderTarget = comp.GetTypeByMetadataName(KnownMetadataNames.VirtualRenderTarget);
+		VirtualTexture = comp.GetTypeByMetadataName(KnownMetadataNames.VirtualTexture);
 	}
 }

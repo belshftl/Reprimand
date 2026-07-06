@@ -67,4 +67,7 @@ internal static class KnownMetadataNames {
 	public const string VirtualContent = "Monocle.VirtualContent";
 	public const string VirtualContentCreateTextureMethod = "CreateTexture";
 	public const string VirtualContentCreateRenderTargetMethod = "CreateRenderTarget";
+
+	public const string VirtualRenderTarget = "Monocle.VirtualRenderTarget";
+	public const string VirtualTexture = "Monocle.VirtualTexture";
 }

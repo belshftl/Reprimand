@@ -34,8 +34,17 @@ internal static class Language {
 		isEnabledByDefault: true
 	);
 
-	public static readonly DiagnosticDescriptor BaseExceptionTypeThrown = new(
+	public static readonly DiagnosticDescriptor ForeachImplicitBadCast = new(
 		id: "RM0303",
+		title: "foreach iteration variable type mismatch",
+		messageFormat: "Cannot assign to '{0}' from iterator yielding '{1}'",
+		category: "Language",
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor BaseExceptionTypeThrown = new(
+		id: "RM0304",
 		title: "Base System.Exception type thrown",
 		messageFormat: "Prefer throwing more specific exception types instead of raw Exception, as raw Exception is poorly fit for `catch` or parsing error info; if there's no suitable built-in exception type, make your own",
 		category: "Language",
