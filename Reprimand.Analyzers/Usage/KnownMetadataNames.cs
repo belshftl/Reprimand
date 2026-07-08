@@ -48,6 +48,7 @@ internal static class KnownMetadataNames {
 	public const string EntityListFindAllMethod = "FindAll";
 
 	public const string Engine = "Monocle.Engine";
+	public const string EngineEffectiveTimeRateField = "EffectiveTimeRate";
 	public const string EngineInstanceProperty = "Instance";
 	public const string EngineGraphicsProperty = "Graphics";
 	public const string EngineCommandsProperty = "Commands";

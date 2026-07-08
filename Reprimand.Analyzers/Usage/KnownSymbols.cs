@@ -43,6 +43,7 @@ internal sealed class KnownSymbols {
 	public ImmutableHashSet<IMethodSymbol> EntityListFindMethods { get; }
 
 	public INamedTypeSymbol? Engine { get; }
+	public IFieldSymbol? EngineEffectiveTimeRateField { get; }
 	public ImmutableHashSet<IPropertySymbol> NonStaticInitedEngineProperties { get; }
 
 	public INamedTypeSymbol? Draw { get; }
@@ -173,6 +174,11 @@ internal sealed class KnownSymbols {
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 
 		Engine = comp.GetTypeByMetadataName(KnownMetadataNames.Engine);
+		EngineEffectiveTimeRateField = Engine
+			?.GetMembers()
+			.OfType<IFieldSymbol>()
+			.FirstOrDefault(static f => f.Name == KnownMetadataNames.EngineEffectiveTimeRateField)
+			?.OriginalDefinition;
 		NonStaticInitedEngineProperties = Engine
 			?.GetMembers()
 			.OfType<IPropertySymbol>()

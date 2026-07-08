@@ -30,6 +30,7 @@ public sealed class GfxAnalyzer : DiagnosticAnalyzer {
 		var fr = (IFieldReferenceOperation)ctx.Operation;
 		if (
 			!(
+				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition, known.EngineEffectiveTimeRateField) ||
 				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition.ContainingType, known.Draw) ||
 				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition.ContainingType, known.Gfx) ||
 				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition.ContainingType, known.TrackedAsAttribute)
