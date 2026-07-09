@@ -12,7 +12,8 @@
 		<Authors>AtBelshftl</Authors>
 		<Description>a utility library for Celeste mods</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
-		<PackageLicenseExpression>LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception</PackageLicenseExpression>
+		<!-- nuget only supports spdx v2, TODO figure something out -->
+		<!-- <PackageLicenseExpression>LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception</PackageLicenseExpression> -->
 		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 
@@ -20,7 +21,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4" PrivateAssets="all" ExcludeAssets="runtime" />
+		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -28,6 +29,10 @@
 		<PackageReference Include="CelesteMod.Publicizer" Version="1.1.2" CelesteAssembly="$(CelestePrefix)/Celeste.dll" />
 		<Reference Include="$(CelestePrefix)/MMHOOK_Celeste.dll" Private="false" />
 		<Reference Include="$(CelestePrefix)/FNA.dll" Private="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="buildTransitive/$(PackageId).targets" Pack="true" PackagePath="buildTransitive/$(PackageId).targets" />
 	</ItemGroup>
 
 	<Target Name="CopyFiles" AfterTargets="Build">

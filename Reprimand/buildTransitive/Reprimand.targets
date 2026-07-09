@@ -1,0 +1,5 @@
+<Project>
+	<Target Name="Reprimand_ValidateCelestePrefix" BeforeTargets="ResolvePackageAssets">
+		<Error Condition="'$(CelestePrefix)' == ''" Code="RMPKG0001" Text="Reprimand requires CelestePrefix to be defined; define it as an MSBuild property in the consuming project." />
+	</Target>
+</Project>
