@@ -4,7 +4,7 @@
 namespace Reprimand.Analyzers.Core;
 
 internal static class KnownMetadataNames {
-	public const string ReprimandCelesteNs = "Reprimand.Celeste";
+	public const string ReprimandExtensionsNs = "Reprimand.Extensions";
 	public const string ReprimandLifecycleNs = "Reprimand.Lifecycle";
 	public const string ReprimandMonoModNs = "Reprimand.MonoMod";
 

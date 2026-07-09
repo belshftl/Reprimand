@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 namespace Reprimand.Analyzers.Core;
 
 internal sealed class KnownSymbols(Compilation comp) {
-	public INamespaceSymbol? ReprimandCelesteNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandCelesteNs);
+	public INamespaceSymbol? ReprimandExtensionsNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandExtensionsNs);
 	public INamespaceSymbol? ReprimandLifecycleNs { get; }= getNamespace(comp, KnownMetadataNames.ReprimandLifecycleNs);
 	public INamespaceSymbol? ReprimandMonoModNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandMonoModNs);
 

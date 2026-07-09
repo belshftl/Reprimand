@@ -6,7 +6,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Reprimand.Celeste;
+namespace Reprimand.Extensions;
 
 /// <summary>
 /// Exception thrown when a tracker operation is attempted on an untracked entity/component type.

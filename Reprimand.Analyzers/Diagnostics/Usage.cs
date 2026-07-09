@@ -28,7 +28,7 @@ internal static class Usage {
 	public static readonly DiagnosticDescriptor IllegalStaticCtorFieldOrPropertyAccess = new(
 		id: "RM0202",
 		title: "Field/property should not be accessed in a static constructor",
-		messageFormat: "Field/property '{0}' should not be accessed in a static constructor or static field/property initializer as it may still be null/uninitialized at this point; for an alternative, consider Lazy<T> or hand-rolled lazy initialization with `??=`",
+		messageFormat: "Field/property '{0}' should not be accessed in a static constructor or static field/property initializer as it may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true
@@ -37,7 +37,7 @@ internal static class Usage {
 	public static readonly DiagnosticDescriptor IllegalStaticCtorStaticMethodCall = new(
 		id: "RM0203",
 		title: "Static method should not be called in a static constructor",
-		messageFormat: "Static method '{0}' should not be called in a static constructor or static field/property initializer, as due to Celeste/Everest shortsightedness, state it relies on may still be null/uninitialized at this point; for an alternative, consider Lazy<T> or hand-rolled lazy initialization with `??=`",
+		messageFormat: "Static method '{0}' should not be called in a static constructor or static field/property initializer, as due to Celeste/Everest shortsightedness, state it relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true
@@ -46,7 +46,7 @@ internal static class Usage {
 	public static readonly DiagnosticDescriptor IllegalStaticCtorObjectInstantiation = new(
 		id: "RM0204",
 		title: "Object should not be instantiated in a static constructor",
-		messageFormat: "Objects of type '{0}' should not be instantiated in a static constructor or static field/property initializer, as due to Celeste/Everest shortsightedness, state its constructor relies on may still be null/uninitialized at this point; for an alternative, consider Lazy<T> or hand-rolled lazy initialization with `??=`",
+		messageFormat: "Objects of type '{0}' should not be instantiated in a static constructor or static field/property initializer, as due to Celeste/Everest shortsightedness, state its constructor relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true
@@ -169,8 +169,8 @@ internal static class Usage {
 
 	public static readonly DiagnosticDescriptor UseExtTrackerMethods = new(
 		id: "RM0217",
-		title: "Use the tracker methods from Reprimand.Celeste",
-		messageFormat: "Use the tracker methods that end in `Ext` from Reprimand.Celeste (`Tracker.GetEntityExt<T>`, etc.), as the vanilla ones neglect some type safety, are not nullable-aware, and have less clear error reporting",
+		title: "Use the tracker methods from Reprimand.Extensions",
+		messageFormat: "Use the tracker methods that end in `Ext` from Reprimand.Extensions (`Tracker.GetEntityExt<T>`, etc.), as the vanilla ones neglect some type safety, are not nullable-aware, and have less clear error reporting",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
@@ -197,7 +197,7 @@ internal static class Usage {
 	public static readonly DiagnosticDescriptor NonTrackerLookupOfTrackedEntityType = new(
 		id: "RM0220",
 		title: "Use the Tracker for tracked entity types",
-		messageFormat: "'{0}' is tracked; use Tracker.GetEntityExt<T> or Tracker.GetEntitiesExt<T> (both of which are from Reprimand.Celeste) instead of EntityList.Find{{First,All}} as it's much faster",
+		messageFormat: "'{0}' is tracked; use Tracker.GetEntityExt<T> or Tracker.GetEntitiesExt<T> (both of which are from Reprimand.Extensions) instead of EntityList.Find{{First,All}} as it's much faster",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
