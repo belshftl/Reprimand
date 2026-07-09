@@ -95,7 +95,7 @@ public static class TrackerExtensions {
 		/// still has the same null-on-not-found behavior, but is nullable-aware unlike the original method.
 		/// </para>
 		/// </remarks>
-		public T? GetEntityOrDefaultExt<T>() where T : Entity {
+		public T? GetEntityOrNullExt<T>() where T : Entity {
 			if (!tr.Entities.TryGetValue(typeof(T), out List<Entity>? l))
 				throw new TypeNotTrackedException(typeof(T));
 			return l.Count == 0 ? null : (T)l[0];
@@ -119,7 +119,7 @@ public static class TrackerExtensions {
 		/// difference is that the original method silently returns <see langword="null"/> if no entity
 		/// of that type was found, while this method throws.
 		/// </remarks>
-		public T GetNearestEntityExt<T>(Vector2 nearestTo) where T : Entity => tr.GetNearestEntityOrDefaultExt<T>(nearestTo) ??
+		public T GetNearestEntityExt<T>(Vector2 nearestTo) where T : Entity => tr.GetNearestEntityOrNullExt<T>(nearestTo) ??
 			throw new TrackedEntityNotFoundException(typeof(T));
 
 		/// <summary>
@@ -138,7 +138,7 @@ public static class TrackerExtensions {
 		/// differences are that of all <c>*Ext</c> tracker methods, those being better internal type safety,
 		/// <see cref="TypeNotTrackedException"/>, and nullable awareness.
 		/// </remarks>
-		public T? GetNearestEntityOrDefaultExt<T>(Vector2 nearestTo) where T : Entity {
+		public T? GetNearestEntityOrNullExt<T>(Vector2 nearestTo) where T : Entity {
 			IReadOnlyList<T> ents = tr.GetEntitiesExt<T>();
 			float match = float.PositiveInfinity;
 			T? matched = null;
@@ -246,7 +246,7 @@ public static class TrackerExtensions {
 		/// still has the same null-on-not-found behavior, but is nullable-aware unlike the original method.
 		/// </para>
 		/// </remarks>
-		public T? GetComponentOrDefaultExt<T>() where T : Component {
+		public T? GetComponentOrNullExt<T>() where T : Component {
 			if (!tr.Components.TryGetValue(typeof(T), out List<Component>? l))
 				throw new TypeNotTrackedException(typeof(T));
 			return l.Count == 0 ? null : (T)l[0];
@@ -272,7 +272,7 @@ public static class TrackerExtensions {
 		/// difference is that the original method silently returns <see langword="null"/> if no component
 		/// of that type was found, while this method throws.
 		/// </remarks>
-		public T GetNearestComponentExt<T>(Vector2 nearestTo) where T : Component => tr.GetNearestComponentOrDefaultExt<T>(nearestTo) ??
+		public T GetNearestComponentExt<T>(Vector2 nearestTo) where T : Component => tr.GetNearestComponentOrNullExt<T>(nearestTo) ??
 			throw new TrackedComponentNotFoundException(typeof(T));
 
 		/// <summary>
@@ -293,7 +293,7 @@ public static class TrackerExtensions {
 		/// differences are that of all <c>*Ext</c> tracker methods, those being better internal type safety,
 		/// <see cref="TypeNotTrackedException"/>, and nullable awareness.
 		/// </remarks>
-		public T? GetNearestComponentOrDefaultExt<T>(Vector2 nearestTo) where T : Component {
+		public T? GetNearestComponentOrNullExt<T>(Vector2 nearestTo) where T : Component {
 			IReadOnlyList<T> comps = tr.GetComponentsExt<T>();
 			float match = float.PositiveInfinity;
 			T? matched = null;
