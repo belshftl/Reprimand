@@ -71,6 +71,8 @@ jobs:
       - name: Download build-time references
         shell: bash
         run: |
+          mkdir -p "${{ runner.temp }}/Vendor"
+
           celeste="${{ runner.temp }}/Vendor/Celeste.dll"
           curl --fail --location --retry 3 --proto '=https' --tlsv1.2 --output "$celeste" "$CELESTE_DLL_URL"
           printf '%s  %s\n' "$CELESTE_DLL_SHA256" "$celeste" | sha256sum --check -
