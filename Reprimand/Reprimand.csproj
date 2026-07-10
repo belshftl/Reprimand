@@ -17,7 +17,7 @@
 		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 
-		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../../../Celeste.dll')">../../..</CelestePrefix>
+		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../Vendor')">../Vendor</CelestePrefix>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,8 +27,8 @@
 	<ItemGroup>
 		<!-- intentionally do not pull CelesteAnalyzer -->
 		<PackageReference Include="CelesteMod.Publicizer" Version="1.1.2" CelesteAssembly="$(CelestePrefix)/Celeste.dll" />
-		<Reference Include="$(CelestePrefix)/MMHOOK_Celeste.dll" Private="false" />
 		<Reference Include="$(CelestePrefix)/FNA.dll" Private="false" />
+		<Reference Include="$(CelestePrefix)/MMHOOK_Celeste.dll" Private="false" />
 	</ItemGroup>
 
 	<ItemGroup>

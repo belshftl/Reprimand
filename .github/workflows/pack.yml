@@ -1,0 +1,111 @@
+name: pack-and-publish
+
+on:
+  push:
+    branches: ['main']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: pack-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: 10.0.x
+
+  CELESTE_DLL_URL: https://github.com/EverestAPI/CelesteTAS-EverestInterop/raw/refs/heads/master/CelesteTAS-EverestInterop/lib-stripped/Celeste.dll
+  CELESTE_DLL_SHA256: c0d4e1310f531dd3c88cb81b60cee770336aaad0337681e26f59ff98e6a4fde0
+
+  FNA_DLL_URL: https://github.com/EverestAPI/CelesteTAS-EverestInterop/raw/refs/heads/master/CelesteTAS-EverestInterop/lib-stripped/FNA.dll
+  FNA_DLL_SHA256: 561e418d97d4203c313c601d658ad7a6a78b68e7a3a33c94777f0c14fb1d2389
+
+  MMHOOK_DLL_URL: https://github.com/EverestAPI/CelesteTAS-EverestInterop/raw/refs/heads/master/CelesteTAS-EverestInterop/lib-stripped/MMHOOK_Celeste.dll
+  MMHOOK_DLL_SHA256: 0a1449c796cbf20c25030b2e4a1c353478c2e848d8e6e0c11556ca1b4023e4e2
+
+jobs:
+  check-changes:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      run_ci: ${{ steps.decide.outputs.run_ci }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - id: decide
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          files="$(git diff --name-only "$base" "$GITHUB_SHA")"
+          if echo "$files" | grep -Eq '^(Reprimand.*/.*|Reprimand.slnx|\.gitmodules|\.github/workflows/.*)$'; then
+            echo "run_ci=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_ci=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  pack-and-push:
+    if: github.event_name != 'pull_request'
+    needs: [check-changes]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Download build-time references
+        shell: bash
+        run: |
+          celeste="${{ runner.temp }}/Vendor/Celeste.dll"
+          curl --fail --location --retry 3 --proto '=https' --tlsv1.2 --output "$celeste" "$CELESTE_DLL_URL"
+          printf '%s  %s\n' "$CELESTE_DLL_SHA256" "$celeste" | sha256sum --check -
+
+          fna="${{ runner.temp }}/Vendor/FNA.dll"
+          curl --fail --location --retry 3 --proto '=https' --tlsv1.2 --output "$fna" "$FNA_DLL_URL"
+          printf '%s  %s\n' "$FNA_DLL_SHA256" "$fna" | sha256sum --check -
+
+          mmhook="${{ runner.temp }}/Vendor/MMHOOK_Celeste.dll"
+          curl --fail --location --retry 3 --proto '=https' --tlsv1.2 --output "$mmhook" "$MMHOOK_DLL_URL"
+          printf '%s  %s\n' "$MMHOOK_DLL_SHA256" "$mmhook" | sha256sum --check -
+      - name: Get package version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            ver="${GITHUB_REF_NAME#v}"
+          else
+            ver="0.1.0-ci.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+      - name: Pack Reprimand
+        run: >
+          dotnet pack Reprimand/Reprimand.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget -p:Version=${{ steps.version.outputs.version }}
+      - name: Pack Reprimand.Analyzers
+        run: >
+          dotnet pack Reprimand.Analyzers/Reprimand.Analyzers.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget -p:Version=${{ steps.version.outputs.version }}
+      - name: Pack Reprimand.Analyzers.CodeFixes
+        run: >
+          dotnet pack Reprimand.Analyzers.CodeFixes/Reprimand.Analyzers.CodeFixes.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget -p:Version=${{ steps.version.outputs.version }}
+      - name: Add GitHub Packages source
+        run: >
+          dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }}
+          --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+      - name: Push packages
+        run: >
+          dotnet nuget push "artifacts/nuget/*.nupkg" --source github --skip-duplicate
+# vim: sw=2 ts=2 sts=2 et
