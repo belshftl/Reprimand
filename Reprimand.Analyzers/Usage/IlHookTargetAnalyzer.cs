@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Reprimand.Analyzers.Usage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class MonoModHookGenAnalyzer : DiagnosticAnalyzer {
+public sealed class IlHookTargetAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 		Diagnostics.Usage.PotentiallyWrongIlHookTarget
 	);

@@ -12,7 +12,7 @@ under a combined project name.
 ---
 
 ## Current library features
-- a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 40 unique diagnostics and counting
+- a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 41 unique diagnostics and counting
 - `[OnLoad]` / etc. lifecycle attributes with deterministic call order and undo tied to the same attribute for clean reverse-registration-order cleanup
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
 - API to be able to bind the backbuffer without clearing it, even if the `RenderTargetUsage` isn't set to `PreserveContents`
