@@ -158,8 +158,17 @@ internal static class Usage {
 		isEnabledByDefault: true
 	);
 
-	public static readonly DiagnosticDescriptor DontUseSceneAsMethod = new(
+	public static readonly DiagnosticDescriptor PotentiallyWrongIlHookTarget = new(
 		id: "RM0216",
+		title: "Potentially wrong IL hook target",
+		messageFormat: "'{0}': '{1}' has an `orig_` counterpart '{2}', did you mean to IL hook that instead?",
+		category: "Usage",
+		defaultSeverity: DiagnosticSeverity.Warning,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor DontUseSceneAsMethod = new(
+		id: "RM0217",
 		title: "Don't use SceneAs<T>",
 		messageFormat: "Instead of `SceneAs<T>`, use `((T)Scene)` if a type mismatch should throw or `(Scene as T)` if you expect the cast to possibly fail; it's functionally identical, more idiomatic, and avoids erasing the nullable annotation since Celeste/Monocle aren't nullable-aware",
 		category: "Usage",
@@ -168,7 +177,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor UseExtTrackerMethods = new(
-		id: "RM0217",
+		id: "RM0218",
 		title: "Use the tracker methods from Reprimand.Extensions",
 		messageFormat: "Use the tracker methods that end in `Ext` from Reprimand.Extensions (`Tracker.GetEntityExt<T>`, etc.), as the vanilla ones neglect some type safety, are not nullable-aware, and have less clear error reporting",
 		category: "Usage",
@@ -177,7 +186,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor DontUseTrackerEnumerateMethods = new(
-		id: "RM0218",
+		id: "RM0219",
 		title: "Don't use Tracker.EnumerateEntities<T> or Tracker.EnumerateComponents<T>",
 		messageFormat: "Use Tracker.GetEntitiesExt<T> or Tracker.GetComponentsExt<T> instead of Tracker.EnumerateEntities<T> / Tracker.EnumerateComponents<T>; the overhead is either the same or even lower",
 		category: "Usage",
@@ -186,7 +195,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor DontUseTrackerCountMethods = new(
-		id: "RM0219",
+		id: "RM0220",
 		title: "Don't use Tracker.CountEntities<T> or Tracker.CountComponents<T>",
 		messageFormat: "Do `Tracker.GetEntitiesExt<T>().Count` or `Tracker.GetComponentsExt<T>().Count` instead of Tracker.CountEntities<T> or Tracker.CountComponents<T>; it's functionally identical, more idiomatic, and has clearer exceptions",
 		category: "Usage",
@@ -195,7 +204,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor NonTrackerLookupOfTrackedEntityType = new(
-		id: "RM0220",
+		id: "RM0221",
 		title: "Use the Tracker for tracked entity types",
 		messageFormat: "'{0}' is tracked; use Tracker.GetEntityExt<T> or Tracker.GetEntitiesExt<T> (both of which are from Reprimand.Extensions) instead of EntityList.Find{{First,All}} as it's much faster",
 		category: "Usage",
@@ -204,7 +213,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor TrackedAsIsClassOnly = new(
-		id: "RM0221",
+		id: "RM0222",
 		title: "[TrackedAs] can only be applied to classes",
 		messageFormat: "[TrackedAs] is only valid on class declarations; the attribute doesn't have `AttributeTargets.Class` set due to an Everest oversight",
 		category: "Usage",
@@ -213,7 +222,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor InvalidTrackedAsType = new(
-		id: "RM0222",
+		id: "RM0223",
 		title: "Invalid [TrackedAs] type",
 		messageFormat: "[TrackedAs] target type '{0}' must be a non-static reference-type class",
 		category: "Usage",
@@ -222,7 +231,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor UnrelatedTrackedAsType = new(
-		id: "RM0223",
+		id: "RM0224",
 		title: "[TrackedAs] type is unrelated to the attributed class",
 		messageFormat: "Type '{0}' must be the same as, or derive from, [TrackedAs] type '{1}'",
 		category: "Usage",
