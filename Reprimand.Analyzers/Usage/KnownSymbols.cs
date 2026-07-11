@@ -7,9 +7,12 @@ using Microsoft.CodeAnalysis;
 namespace Reprimand.Analyzers.Usage;
 
 internal sealed class KnownSymbols {
+	public INamedTypeSymbol? SystemDelegate { get; }
+	public INamedTypeSymbol? LinqExpression { get; }
+	public INamedTypeSymbol? IEnumerator { get; }
+
 	public INamedTypeSymbol? DontUseInStaticCtorAttribute { get; }
 	public INamedTypeSymbol? IOnLoadLifecycleAttribute { get; }
-	public INamedTypeSymbol? HookMethodAttribute { get; }
 
 	public INamedTypeSymbol? Hook { get; }
 	public INamedTypeSymbol? ILHook { get; }
@@ -60,9 +63,12 @@ internal sealed class KnownSymbols {
 	public INamedTypeSymbol? VirtualTexture { get; }
 
 	public KnownSymbols(Compilation comp) {
+		SystemDelegate = comp.GetTypeByMetadataName(KnownMetadataNames.SystemDelegate);
+		LinqExpression = comp.GetTypeByMetadataName(KnownMetadataNames.LinqExpression);
+		IEnumerator = comp.GetTypeByMetadataName(KnownMetadataNames.IEnumerator);
+
 		DontUseInStaticCtorAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.DontUseInStaticCtorAttribute);
 		IOnLoadLifecycleAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.IOnLoadLifecycleAttribute);
-		HookMethodAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.HookMethodAttribute);
 
 		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
 		ILHook = comp.GetTypeByMetadataName(KnownMetadataNames.ILHook);
@@ -113,10 +119,10 @@ internal sealed class KnownSymbols {
 			.Select(static m => m.OriginalDefinition)
 			.Concat(
 				Component
-				?.GetMembers()
-				.OfType<IMethodSymbol>()
-				.Where(static m => m.Name == KnownMetadataNames.SceneAsMethod)
-				.Select(static m => m.OriginalDefinition) ?? ImmutableArray<IMethodSymbol>.Empty
+					?.GetMembers()
+					.OfType<IMethodSymbol>()
+					.Where(static m => m.Name == KnownMetadataNames.SceneAsMethod)
+					.Select(static m => m.OriginalDefinition) ?? ImmutableArray<IMethodSymbol>.Empty
 			)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 
@@ -127,36 +133,33 @@ internal sealed class KnownSymbols {
 		TrackerExtReplacedMethods = Tracker
 			?.GetMembers()
 			.OfType<IMethodSymbol>()
-			.Where(
-				static m =>
-					m.Name == KnownMetadataNames.TrackerGetEntityMethod ||
-					m.Name == KnownMetadataNames.TrackerGetNearestEntityMethod ||
-					m.Name == KnownMetadataNames.TrackerGetEntitiesMethod ||
-					m.Name == KnownMetadataNames.TrackerGetEntitiesCopyMethod ||
-					m.Name == KnownMetadataNames.TrackerGetComponentMethod ||
-					m.Name == KnownMetadataNames.TrackerGetNearestComponentMethod ||
-					m.Name == KnownMetadataNames.TrackerGetComponentsMethod ||
-					m.Name == KnownMetadataNames.TrackerGetComponentsCopyMethod
+			.Where(static m =>
+				m.Name == KnownMetadataNames.TrackerGetEntityMethod ||
+				m.Name == KnownMetadataNames.TrackerGetNearestEntityMethod ||
+				m.Name == KnownMetadataNames.TrackerGetEntitiesMethod ||
+				m.Name == KnownMetadataNames.TrackerGetEntitiesCopyMethod ||
+				m.Name == KnownMetadataNames.TrackerGetComponentMethod ||
+				m.Name == KnownMetadataNames.TrackerGetNearestComponentMethod ||
+				m.Name == KnownMetadataNames.TrackerGetComponentsMethod ||
+				m.Name == KnownMetadataNames.TrackerGetComponentsCopyMethod
 			)
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		TrackerEnumerateMethods = Tracker
 			?.GetMembers()
 			.OfType<IMethodSymbol>()
-			.Where(
-				static m =>
-					m.Name == KnownMetadataNames.TrackerEnumerateEntitiesMethod ||
-					m.Name == KnownMetadataNames.TrackerEnumerateComponentsMethod
+			.Where(static m =>
+				m.Name == KnownMetadataNames.TrackerEnumerateEntitiesMethod ||
+				m.Name == KnownMetadataNames.TrackerEnumerateComponentsMethod
 			)
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		TrackerCountMethods = Tracker
 			?.GetMembers()
 			.OfType<IMethodSymbol>()
-			.Where(
-				static m =>
-					m.Name == KnownMetadataNames.TrackerCountEntitiesMethod ||
-					m.Name == KnownMetadataNames.TrackerCountComponentsMethod
+			.Where(static m =>
+				m.Name == KnownMetadataNames.TrackerCountEntitiesMethod ||
+				m.Name == KnownMetadataNames.TrackerCountComponentsMethod
 			)
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
@@ -165,10 +168,9 @@ internal sealed class KnownSymbols {
 		EntityListFindMethods = EntityList
 			?.GetMembers()
 			.OfType<IMethodSymbol>()
-			.Where(
-				static m =>
-					m.Name == KnownMetadataNames.EntityListFindFirstMethod ||
-					m.Name == KnownMetadataNames.EntityListFindAllMethod
+			.Where(static m =>
+				m.Name == KnownMetadataNames.EntityListFindFirstMethod ||
+				m.Name == KnownMetadataNames.EntityListFindAllMethod
 			)
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
@@ -182,12 +184,11 @@ internal sealed class KnownSymbols {
 		NonStaticInitedEngineProperties = Engine
 			?.GetMembers()
 			.OfType<IPropertySymbol>()
-			.Where(
-				static p =>
-					p.Name == KnownMetadataNames.EngineInstanceProperty ||
-					p.Name == KnownMetadataNames.EngineGraphicsProperty ||
-					p.Name == KnownMetadataNames.EngineCommandsProperty ||
-					p.Name == KnownMetadataNames.EnginePoolerProperty
+			.Where(static p =>
+				p.Name == KnownMetadataNames.EngineInstanceProperty ||
+				p.Name == KnownMetadataNames.EngineGraphicsProperty ||
+				p.Name == KnownMetadataNames.EngineCommandsProperty ||
+				p.Name == KnownMetadataNames.EnginePoolerProperty
 			)
 			.Select(static p => p.OriginalDefinition)
 			.ToImmutableHashSet<IPropertySymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IPropertySymbol>.Empty;
@@ -202,11 +203,10 @@ internal sealed class KnownSymbols {
 		NonStaticInitedDrawProperties = Draw
 			?.GetMembers()
 			.OfType<IPropertySymbol>()
-			.Where(
-				static p =>
-					p.Name == KnownMetadataNames.DrawRendererProperty ||
-					p.Name == KnownMetadataNames.DrawSpriteBatchProperty ||
-					p.Name == KnownMetadataNames.DrawDefaultFontProperty
+			.Where(static p =>
+				p.Name == KnownMetadataNames.DrawRendererProperty ||
+				p.Name == KnownMetadataNames.DrawSpriteBatchProperty ||
+				p.Name == KnownMetadataNames.DrawDefaultFontProperty
 			)
 			.Select(static p => p.OriginalDefinition)
 			.ToImmutableHashSet<IPropertySymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IPropertySymbol>.Empty;
@@ -215,10 +215,9 @@ internal sealed class KnownSymbols {
 		NonStaticInitedGfxFields = Gfx
 			?.GetMembers()
 			.OfType<IFieldSymbol>()
-			.Where(
-				static f =>
-					f.Name != KnownMetadataNames.GfxSubtractField &&
-					f.Name != KnownMetadataNames.GfxDestinationTransparencySubtractField
+			.Where(static f =>
+				f.Name != KnownMetadataNames.GfxSubtractField &&
+				f.Name != KnownMetadataNames.GfxDestinationTransparencySubtractField
 			)
 			.Select(static f => f.OriginalDefinition)
 			.ToImmutableHashSet<IFieldSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IFieldSymbol>.Empty;
@@ -227,10 +226,9 @@ internal sealed class KnownSymbols {
 		NonStaticInitedVirtualContentMethods = VirtualContent
 			?.GetMembers()
 			.OfType<IMethodSymbol>()
-			.Where(
-				static m =>
-					m.Name == KnownMetadataNames.VirtualContentCreateTextureMethod ||
-					m.Name == KnownMetadataNames.VirtualContentCreateRenderTargetMethod
+			.Where(static m =>
+				m.Name == KnownMetadataNames.VirtualContentCreateTextureMethod ||
+				m.Name == KnownMetadataNames.VirtualContentCreateRenderTargetMethod
 			)
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;

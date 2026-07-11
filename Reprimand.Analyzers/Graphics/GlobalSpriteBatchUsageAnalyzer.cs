@@ -23,42 +23,43 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static ctx => {
-			KnownSymbols known = new(ctx.Compilation);
-			if (known.SpriteBatch is null || known.GlobalSpriteBatch is null)
-				return;
+				KnownSymbols known = new(ctx.Compilation);
+				if (known.SpriteBatch is null || known.GlobalSpriteBatch is null)
+					return;
 
-			ctx.RegisterSyntaxNodeAction(c => analyzeVariableDeclaration(c, known), SyntaxKind.VariableDeclaration);
-			ctx.RegisterSyntaxNodeAction(c => analyzeParameter(c, known), SyntaxKind.Parameter);
-			ctx.RegisterSyntaxNodeAction(
-				c => analyzeTypedDeclaration(c, known),
-				SyntaxKind.PropertyDeclaration,
-				SyntaxKind.IndexerDeclaration,
-				SyntaxKind.EventDeclaration,
-				SyntaxKind.MethodDeclaration,
-				SyntaxKind.LocalFunctionStatement,
-				SyntaxKind.DelegateDeclaration,
-				SyntaxKind.OperatorDeclaration,
-				SyntaxKind.ConversionOperatorDeclaration,
-				SyntaxKind.SimpleBaseType,
-				SyntaxKind.TypeConstraint,
-				SyntaxKind.DeclarationPattern,
-				SyntaxKind.RecursivePattern
-			);
-			ctx.RegisterSyntaxNodeAction(c => analyzeForEachStatement(c, known), SyntaxKind.ForEachStatement);
-			ctx.RegisterSyntaxNodeAction(c => analyzeDeclarationExpression(c, known), SyntaxKind.DeclarationExpression);
-			ctx.RegisterOperationAction(
-				c => analyzeSpriteBatchValue(c, known),
-				OperationKind.LocalReference,
-				OperationKind.ParameterReference,
-				OperationKind.FieldReference,
-				OperationKind.PropertyReference,
-				OperationKind.ArrayElementReference,
-				OperationKind.Invocation,
-				OperationKind.Conversion,
-				OperationKind.Await,
-				OperationKind.InstanceReference
-			);
-		});
+				ctx.RegisterSyntaxNodeAction(c => analyzeVariableDeclaration(c, known), SyntaxKind.VariableDeclaration);
+				ctx.RegisterSyntaxNodeAction(c => analyzeParameter(c, known), SyntaxKind.Parameter);
+				ctx.RegisterSyntaxNodeAction(
+					c => analyzeTypedDeclaration(c, known),
+					SyntaxKind.PropertyDeclaration,
+					SyntaxKind.IndexerDeclaration,
+					SyntaxKind.EventDeclaration,
+					SyntaxKind.MethodDeclaration,
+					SyntaxKind.LocalFunctionStatement,
+					SyntaxKind.DelegateDeclaration,
+					SyntaxKind.OperatorDeclaration,
+					SyntaxKind.ConversionOperatorDeclaration,
+					SyntaxKind.SimpleBaseType,
+					SyntaxKind.TypeConstraint,
+					SyntaxKind.DeclarationPattern,
+					SyntaxKind.RecursivePattern
+				);
+				ctx.RegisterSyntaxNodeAction(c => analyzeForEachStatement(c, known), SyntaxKind.ForEachStatement);
+				ctx.RegisterSyntaxNodeAction(c => analyzeDeclarationExpression(c, known), SyntaxKind.DeclarationExpression);
+				ctx.RegisterOperationAction(
+					c => analyzeSpriteBatchValue(c, known),
+					OperationKind.LocalReference,
+					OperationKind.ParameterReference,
+					OperationKind.FieldReference,
+					OperationKind.PropertyReference,
+					OperationKind.ArrayElementReference,
+					OperationKind.Invocation,
+					OperationKind.Conversion,
+					OperationKind.Await,
+					OperationKind.InstanceReference
+				);
+			}
+		);
 	}
 
 	private static void analyzeVariableDeclaration(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
@@ -119,7 +120,7 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 			return;
 		var decl = (DeclarationExpressionSyntax)ctx.Node;
 		ITypeSymbol? type = ctx.SemanticModel.GetTypeInfo(decl.Type, ctx.CancellationToken).Type;
-		if (type is null) {
+		if (type is null)
 			foreach (SingleVariableDesignationSyntax dsg in decl.Designation.DescendantNodesAndSelf().OfType<SingleVariableDesignationSyntax>()) {
 				var sym = ctx.SemanticModel.GetDeclaredSymbol(dsg, ctx.CancellationToken) as ILocalSymbol;
 				if (sym is not null && containsSpriteBatch(sym.Type, known.SpriteBatch)) {
@@ -127,7 +128,6 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 					break;
 				}
 			}
-		}
 		reportDeclaration(ctx, known, type, decl.Type.GetLocation());
 	}
 
@@ -191,7 +191,7 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 		case IPointerTypeSymbol ptr:
 			return containsSpriteBatch(ptr.PointedAtType, spriteBatchType);
 		case IFunctionPointerTypeSymbol funcptr:
-			if (containsSpriteBatch( funcptr.Signature.ReturnType, spriteBatchType))
+			if (containsSpriteBatch(funcptr.Signature.ReturnType, spriteBatchType))
 				return true;
 			foreach (IParameterSymbol param in funcptr.Signature.Parameters)
 				if (containsSpriteBatch(param.Type, spriteBatchType))

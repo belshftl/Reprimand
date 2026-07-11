@@ -145,7 +145,7 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 
 	private static bool shouldReport(IOperation self, ISymbol containingSymbol) {
 		bool report = containingSymbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor };
-		if (!report) {
+		if (!report)
 			for (IOperation? ancestor = self.Parent; ancestor is not null; ancestor = ancestor.Parent) {
 				if (ancestor is IAnonymousFunctionOperation or ILocalFunctionOperation or INameOfOperation)
 					return false;
@@ -158,7 +158,6 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 					break;
 				}
 			}
-		}
 		return report;
 	}
 }

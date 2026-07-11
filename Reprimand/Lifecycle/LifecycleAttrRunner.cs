@@ -48,7 +48,11 @@ public static class LifecycleAttrRunner {
 				continue;
 			}
 			if (m.DeclaringType.FullName is null) {
-				Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.Name}' has a declaring type without a resolved full name; not calling it");
+				Logger.Log(
+					LogLevel.Warn,
+					"Reprimand/LifecycleAttrRunner",
+					$"on-load lifecycle method '{m.Name}' has a declaring type without a resolved full name; not calling it"
+				);
 				continue;
 			}
 			switch (a) {
@@ -119,32 +123,40 @@ public static class LifecycleAttrRunner {
 		try {
 			types = asm.GetTypes().ToArray();
 		} catch (ReflectionTypeLoadException e) {
-			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"caught ReflectionTypeLoadException getting the types declared in assembly '{asm.FullName}'; that assembly may be missing some dependency or only partially loaded");
+			Logger.Log(
+				LogLevel.Warn,
+				"Reprimand/LifecycleAttrRunner",
+				$"caught ReflectionTypeLoadException getting the types declared in assembly '{asm.FullName}'; that assembly may be missing some dependency or only partially loaded"
+			);
 			types = e.Types.Where(static t => t is not null).ToArray()!;
 		}
 
 		List<(MethodInfo m, IOnLoadLifecycleAttribute attr)> result = new();
 		foreach (Type t in types) {
 			foreach (MethodInfo m in t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)) {
-				foreach (Type a in attrTypes) {
+				foreach (Type a in attrTypes)
 					if (m.GetCustomAttribute(a, inherit: false) is {} attr) {
 						var cast = (IOnLoadLifecycleAttribute)attr;
 						if (m.IsStatic && !m.IsGenericMethodDefinition && m.ReturnType == typeof(void)) {
 							result.Add((m, cast));
 						} else {
-							string why = !m.IsStatic ? "is non-static" : (m.IsGenericMethodDefinition ? "is generic" : "doesn't return void");
-							Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a lifecycle attribute but isn't a valid lifecycle attribute method because it {why}; not calling it");
+							string why = !m.IsStatic ? "is non-static" : m.IsGenericMethodDefinition ? "is generic" : "doesn't return void";
+							Logger.Log(
+								LogLevel.Warn,
+								"Reprimand/LifecycleAttrRunner",
+								$"method '{m.DeclaringType?.FullName ?? "<unknown class>"}.{m.Name}' is marked with a lifecycle attribute but isn't a valid lifecycle attribute method because it {why}; not calling it"
+							);
 						}
 					}
-				}
 			}
 		}
 		result.Sort((a, b) => {
-			int c = a.attr.Priority.CompareTo(b.attr.Priority);
-			if (c != 0)
-				return c;
-			return orderMethods(a.m, b.m);
-		});
+				int c = a.attr.Priority.CompareTo(b.attr.Priority);
+				if (c != 0)
+					return c;
+				return orderMethods(a.m, b.m);
+			}
+		);
 		return result;
 	}
 
@@ -182,14 +194,24 @@ public static class LifecycleAttrRunner {
 			undoList.Add(undo);
 			callback();
 		} else {
-			string why = !undo.IsStatic ? "is non-static" : (undo.IsGenericMethodDefinition ? "is generic" : (undo.ReturnType != typeof(void) ? "doesn't return void" : "takes in more than 0 parameters"));
-			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{methodName}' has an invalid undo counterpart as said counterpart {why}; not calling it");
+			string why = !undo.IsStatic ? "is non-static" :
+				undo.IsGenericMethodDefinition ? "is generic" :
+				undo.ReturnType != typeof(void) ? "doesn't return void" : "takes in more than 0 parameters";
+			Logger.Log(
+				LogLevel.Warn,
+				"Reprimand/LifecycleAttrRunner",
+				$"on-load lifecycle method '{methodName}' has an invalid undo counterpart as said counterpart {why}; not calling it"
+			);
 		}
 	}
 
 	private static void invokeParamless(MethodInfo m, string detourId) {
 		if (m.GetParameters().Length != 0) {
-			Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in more than 0 parameters; not calling it");
+			Logger.Log(
+				LogLevel.Warn,
+				"Reprimand/LifecycleAttrRunner",
+				$"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in more than 0 parameters; not calling it"
+			);
 		} else {
 			Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}'");
 			using (new global::MonoMod.RuntimeDetour.DetourConfigContext(new global::MonoMod.RuntimeDetour.DetourConfig(detourId)).Use())
@@ -201,7 +223,11 @@ public static class LifecycleAttrRunner {
 		ParameterInfo[] @params = m.GetParameters();
 		if (@params.Length != 0)
 			if (@params.Length != 1 || @params[0].ParameterType.IsByRef || @params[0].ParameterType.IsAssignableFrom(typeof(EverestModule)))
-				Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in something either than 0 parameters or 1 parameter of type EverestModule; not calling it");
+				Logger.Log(
+					LogLevel.Warn,
+					"Reprimand/LifecycleAttrRunner",
+					$"on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}' isn't valid because it takes in something either than 0 parameters or 1 parameter of type EverestModule; not calling it"
+				);
 		if (Everest.Loader.TryGetDependency(wanted, out EverestModule mod)) {
 			Logger.Log(LogLevel.Debug, "Reprimand/LifecycleAttrRunner", $"invoking on-load lifecycle method '{m.DeclaringType!.FullName}.{m.Name}'");
 			using (new global::MonoMod.RuntimeDetour.DetourConfigContext(new global::MonoMod.RuntimeDetour.DetourConfig(detourId)).Use()) {

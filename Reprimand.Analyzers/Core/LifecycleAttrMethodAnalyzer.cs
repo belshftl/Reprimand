@@ -42,7 +42,7 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		var sym = (IMethodSymbol)ctx.Symbol;
 		AttributeData? attr = null;
 		bool isDepConditional = false;
-		foreach (AttributeData a in sym.GetAttributes()) {
+		foreach (AttributeData a in sym.GetAttributes())
 			if (
 				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnLoadAttribute) ||
 				SymbolEqualityComparer.Default.Equals(a.AttributeClass, known.OnLoadOneshotAttribute)
@@ -55,18 +55,25 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 				attr = a;
 				isDepConditional = true;
 			}
-		}
 		if (attr is null)
 			return;
 		analyzeAttributeReference(ctx, attr);
 		Location? loc = attr.ApplicationSyntaxReference?.GetSyntax(ctx.CancellationToken).GetLocation() ??
 			sym.Locations.FirstOrDefault(static l => l.IsInSource);
 		if (!sym.IsStatic || sym.IsGenericMethod || !sym.ReturnsVoid)
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrMethodCandidate, loc, sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+			ctx.ReportDiagnostic(
+				Diagnostic.Create(Diagnostics.Core.InvalidLifecycleAttrMethodCandidate, loc, sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat))
+			);
 
 		if (!isDepConditional) {
 			if (sym.Parameters.Length != 0)
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidUnconditionalLifecycleAttrMethodParams, loc, sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+				ctx.ReportDiagnostic(
+					Diagnostic.Create(
+						Diagnostics.Core.InvalidUnconditionalLifecycleAttrMethodParams,
+						loc,
+						sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+					)
+				);
 		} else {
 			if (sym.Parameters.Length != 0 &&
 				!(
@@ -74,7 +81,13 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 					SymbolEqualityComparer.Default.Equals(sym.Parameters[0].Type, known.EverestModule)
 				)
 			)
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.InvalidDepConditionalLifecycleAttrMethodParams, loc, sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+				ctx.ReportDiagnostic(
+					Diagnostic.Create(
+						Diagnostics.Core.InvalidDepConditionalLifecycleAttrMethodParams,
+						loc,
+						sym.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+					)
+				);
 		}
 	}
 
@@ -88,7 +101,7 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 		Location? loc = sx.ArgumentList.Arguments[0].Expression.GetLocation();
 
 		string? methodName = null;
-		foreach (KeyValuePair<string, TypedConstant> named in attr.NamedArguments) {
+		foreach (KeyValuePair<string, TypedConstant> named in attr.NamedArguments)
 			if (named is { Key: "UndoMethod", Value.Value: string s }) {
 				methodName = s;
 				ExpressionSyntax? node = sx.ArgumentList.Arguments.FirstOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == named.Key)?.Expression;
@@ -96,7 +109,6 @@ public sealed class LifecycleAttrMethodAnalyzer : DiagnosticAnalyzer {
 					ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.UseNameofForLifecycleAttrUndoMethodName, loc));
 				break;
 			}
-		}
 		if (methodName is null)
 			return;
 

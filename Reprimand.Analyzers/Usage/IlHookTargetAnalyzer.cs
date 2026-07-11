@@ -36,13 +36,15 @@ public sealed class IlHookTargetAnalyzer : DiagnosticAnalyzer {
 		IMethodSymbol? hookedMethod = targetType.GetMembers(sym.Name).OfType<IMethodSymbol>().FirstOrDefault();
 		if (targetType.GetMembers("orig_" + sym.Name).OfType<IMethodSymbol>().FirstOrDefault() is not IMethodSymbol origMethod)
 			return;
-		ctx.ReportDiagnostic(Diagnostic.Create(
-			Diagnostics.Usage.PotentiallyWrongIlHookTarget,
-			asg.Syntax.GetLocation(),
-			$"IL.{targetMetadataName}.{sym.Name}",
-			hookedMethod?.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat) ?? "<unknown>",
-			origMethod.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
-		));
+		ctx.ReportDiagnostic(
+			Diagnostic.Create(
+				Diagnostics.Usage.PotentiallyWrongIlHookTarget,
+				asg.Syntax.GetLocation(),
+				$"IL.{targetMetadataName}.{sym.Name}",
+				hookedMethod?.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat) ?? "<unknown>",
+				origMethod.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+			)
+		);
 	}
 
 	private static bool tryGetTargetMetadataName(INamedTypeSymbol hookType, out string metadataName) {

@@ -4,9 +4,12 @@
 namespace Reprimand.Analyzers.Usage;
 
 internal static class KnownMetadataNames {
+	public const string SystemDelegate = "System.Delegate";
+	public const string LinqExpression = "System.Linq.Expressions.Expression";
+	public const string IEnumerator = "System.Collections.IEnumerator";
+
 	public const string DontUseInStaticCtorAttribute = "Reprimand.CodeAnalysis.DontUseInStaticCtorAttribute";
 	public const string IOnLoadLifecycleAttribute = "Reprimand.Lifecycle.IOnLoadLifecycleAttribute";
-	public const string HookMethodAttribute = "Reprimand.MonoMod.HookMethodAttribute";
 
 	public const string Hook = "MonoMod.RuntimeDetour.Hook";
 	public const string ILHook = "MonoMod.RuntimeDetour.ILHook";

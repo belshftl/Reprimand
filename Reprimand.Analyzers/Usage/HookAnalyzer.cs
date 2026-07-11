@@ -3,6 +3,8 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -10,162 +12,323 @@ namespace Reprimand.Analyzers.Usage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class HookAnalyzer : DiagnosticAnalyzer {
-	private enum DelegateTargetKind {
-		PlainStaticMethodGroup,
-		StaticLambda,
-		NonStaticOrUnknown,
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+		Diagnostics.Usage.NonStaticHookMethod,
+		Diagnostics.Usage.GenericHookMethod,
+		Diagnostics.Usage.NonNullableHookParameter,
+		Diagnostics.Usage.OrigNotCalled,
+		Diagnostics.Usage.YieldReturnOrig
+	);
+
+	[Flags]
+	private enum HookKind {
+		None = 0,
+		Plain = 1,
+		Il = 2,
 	}
 
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-		Diagnostics.Usage.UnmarkedHookMethod,
-		Diagnostics.Usage.NonStaticHookMethod,
-		Diagnostics.Usage.HookStaticLambda,
-		Diagnostics.Usage.NonStaticEmitDelegateMethod,
-		Diagnostics.Usage.EmitDelegateStaticLambda,
-		Diagnostics.Usage.DestructiveILEdit,
-		Diagnostics.Usage.PreferRequireGoto
-	);
+	private readonly struct Callable(IMethodSymbol method, SyntaxNode? declaration) {
+		public IMethodSymbol Method { get; } = method;
+		public SyntaxNode? Declaration { get; } = declaration;
+	}
+
+	private sealed class RegisteredHook(IMethodSymbol method, SyntaxNode declaration, HookKind kind) {
+		public IMethodSymbol Method { get; } = method;
+		public SyntaxNode Declaration { get; } = declaration;
+		public HookKind Kind { get; set; } = kind;
+	}
 
 	public override void Initialize(AnalysisContext context) {
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static ctx => {
 				KnownSymbols known = new(ctx.Compilation);
-				ctx.RegisterOperationAction(c => analyzeEventAssignment(c, known), OperationKind.EventAssignment);
-				ctx.RegisterOperationAction(c => analyzeObjectCreation(c, known), OperationKind.ObjectCreation);
-				ctx.RegisterOperationAction(c => analyzeInvocation(c, known), OperationKind.Invocation);
-				ctx.RegisterOperationAction(
-					c => analyzeAssignment(c, known),
-					OperationKind.SimpleAssignment,
-					OperationKind.CompoundAssignment,
-					OperationKind.Increment,
-					OperationKind.Decrement
-				);
+				ctx.RegisterSemanticModelAction(c => analyzeSemanticModel(c, known));
 			}
 		);
 	}
 
-	private static void analyzeEventAssignment(OperationAnalysisContext ctx, KnownSymbols known) {
-		var asg = (IEventAssignmentOperation)ctx.Operation;
-		var @ref = (IEventReferenceOperation)asg.EventReference;
-		IEventSymbol sym = @ref.Event;
-		INamespaceSymbol ns = sym.ContainingNamespace;
-		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent);
-		if (ns.Name is "On" or "IL")
-			maybeReportDelegateValue(ctx, asg.HandlerValue, isHook: true, known);
-	}
+	private static void analyzeSemanticModel(SemanticModelAnalysisContext ctx, KnownSymbols known) {
+		SemanticModel model = ctx.SemanticModel;
+		CancellationToken ct = ctx.CancellationToken;
+		SyntaxNode root = model.SyntaxTree.GetRoot(ct);
+		Dictionary<IMethodSymbol, RegisteredHook> hooks = new(SymbolEqualityComparer.Default);
+		foreach (AssignmentExpressionSyntax? asg in root.DescendantNodes().OfType<AssignmentExpressionSyntax>()) {
+			ct.ThrowIfCancellationRequested();
+			if (!asg.IsKind(SyntaxKind.AddAssignmentExpression))
+				continue;
+			if (model.GetSymbolInfo(asg.Left, ct).Symbol is not IEventSymbol ev || !tryClassifyHookGenEvent(ev, out HookKind kind))
+				continue;
+			if (tryGetCallable(model.GetOperation(asg.Right, ct)) is Callable c)
+				addHook(hooks, model.SyntaxTree, c, kind, ct);
+		}
 
-	private static void analyzeObjectCreation(OperationAnalysisContext ctx, KnownSymbols known) {
-		var creat = (IObjectCreationOperation)ctx.Operation;
-		if (!creat.Type.IsHook(known))
-			return;
-		IArgumentOperation? delegateArg = findDelegateArgument(creat.Arguments);
-		if (delegateArg is not null)
-			maybeReportDelegateArg(ctx, delegateArg, isHookMethod: true, known);
-	}
+		foreach (BaseObjectCreationExpressionSyntax? creatSx in root.DescendantNodes().OfType<BaseObjectCreationExpressionSyntax>()) {
+			ct.ThrowIfCancellationRequested();
+			if (
+				model.GetOperation(creatSx, ct) is not IObjectCreationOperation creat ||
+				creat.Constructor is null ||
+				!tryClassifyDetourType(creat.Constructor.ContainingType, known, out HookKind kind)
+			)
+				continue;
 
-	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
-		var inv = (IInvocationOperation)ctx.Operation;
-		if (known.EmitDelegateMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
-			IArgumentOperation? delegateArg = findDelegateArgument(inv.Arguments);
-			if (delegateArg is not null)
-				maybeReportDelegateArg(ctx, delegateArg, isHookMethod: false, known);
-		} else if (known.RemoveInstructionMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
-		} else if (known.GotoMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.PreferRequireGoto, inv.Syntax.GetLocation()));
-		} else {
-			ITypeSymbol? receiverType = inv.Instance?.Type;
-			if (receiverType is null || !isInstructionListLike(receiverType, known))
-				return;
-			// TODO move out these constants
-			if (inv.TargetMethod.Name is "Add" or "AddRange" or "Clear" or "Insert" or "InsertRange" or "Remove" or "RemoveAt" or "RemoveRange")
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
+			IArgumentOperation? hookArg = creat.Arguments.FirstOrDefault(argument => argument.Parameter?.Ordinal == 1);
+			if (hookArg is null)
+				continue;
+
+			if (tryGetCallable(hookArg.Value) is Callable c)
+				addHook(hooks, model.SyntaxTree, c, kind, ct);
+		}
+		foreach (RegisteredHook? h in hooks.Values) {
+			ct.ThrowIfCancellationRequested();
+			analyzeHook(ctx, h, known);
 		}
 	}
 
-	private static void analyzeAssignment(OperationAnalysisContext ctx, KnownSymbols known) {
-		IOperation? left = ctx.Operation switch {
-			ISimpleAssignmentOperation op => op.Target,
-			ICompoundAssignmentOperation op => op.Target,
-			IIncrementOrDecrementOperation op => op.Target,
-			_ => null,
-		};
-		if (left is null)
+	private static void analyzeHook(
+		SemanticModelAnalysisContext ctx,
+		RegisteredHook hook,
+		KnownSymbols known
+	) {
+		SemanticModel model = ctx.SemanticModel;
+		CancellationToken ct = ctx.CancellationToken;
+		IMethodSymbol method = hook.Method;
+		SyntaxNode decl = hook.Declaration;
+		string displayName = decl is AnonymousFunctionExpressionSyntax ? "<lambda expression>" : method.Name;
+		Location declLoc = getDeclLocation(method, decl, model.SyntaxTree);
+
+		if (!(decl is AnonymousFunctionExpressionSyntax anon ? anon.Modifiers.Any(SyntaxKind.StaticKeyword) : method.IsStatic))
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.NonStaticHookMethod, declLoc, displayName));
+		if (method.IsGenericMethod)
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.GenericHookMethod, declLoc, displayName));
+
+		if (hook.Kind != HookKind.Plain)
 			return;
 
-		if (left is IPropertyReferenceOperation propRef) {
-			IPropertySymbol prop = propRef.Property.OriginalDefinition;
-			if (known.InstructionMembers.Contains(prop) ||
-				propRef.Property.IsIndexer && propRef.Instance?.Type is {} receiverType && isInstructionListLike(receiverType, known)) {
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, left.Syntax.GetLocation()));
-				return;
+		IParameterSymbol? orig = method.Parameters.FirstOrDefault();
+		IOperation? body = getBodyOperation(model, decl, ct);
+		if (orig is null || body is null || !hasInvocationOf(body, orig, ct))
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.OrigNotCalled, declLoc, displayName));
+
+		if (orig is not null && known.IEnumerator is not null && SymbolEqualityComparer.Default.Equals(method.ReturnType.OriginalDefinition, known.IEnumerator.OriginalDefinition))
+			foreach (YieldStatementSyntax? yield in getDirectYieldStatements(decl)) {
+				ct.ThrowIfCancellationRequested();
+				if (yield.Expression is null)
+					continue;
+				IOperation? expr = model.GetOperation(yield.Expression, ct);
+				if (!isDirectInvocationOf(expr, orig))
+					continue;
+				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.YieldReturnOrig, yield.GetLocation()));
 			}
-		}
 
-		if (left is IFieldReferenceOperation fieldRef && known.InstructionMembers.Contains(fieldRef.Field.OriginalDefinition))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, left.Syntax.GetLocation()));
+		foreach (IParameterSymbol? param in method.Parameters) {
+			ct.ThrowIfCancellationRequested();
+
+			if (
+				param.Ordinal == 0 || // orig
+				param.Ordinal == 1 && param.Name == "self" ||
+				!param.Type.IsReferenceType ||
+				param.NullableAnnotation != NullableAnnotation.NotAnnotated
+			)
+				continue;
+
+			Location? loc = getParamLocation(param, model.SyntaxTree, ct);
+			if (loc is null)
+				continue;
+
+			NullableContext nullable = model.GetNullableContext(loc.SourceSpan.Start);
+			if ((nullable & NullableContext.AnnotationsEnabled) == 0)
+				continue;
+			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.NonNullableHookParameter, loc, param.Name));
+		}
 	}
 
-	private static bool isInstructionListLike(ITypeSymbol type, KnownSymbols known) {
-		if (known.Instruction is null)
-			return false;
-		if (isGenericInstructionCollection(type, known.Instruction))
+	private static bool tryClassifyHookGenEvent(IEventSymbol ev, out HookKind kind) {
+		INamespaceSymbol ns = ev.ContainingNamespace;
+		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent) ;
+		switch (ns.Name) {
+		case "On":
+			kind = HookKind.Plain;
 			return true;
-		foreach (INamedTypeSymbol iface in type.AllInterfaces)
-			if (isGenericInstructionCollection(iface, known.Instruction))
-				return true;
+		case "IL":
+			kind = HookKind.Il;
+			return true;
+		default:
+			kind = HookKind.None;
+			return false;
+		}
+	}
+
+	private static bool tryClassifyDetourType(INamedTypeSymbol type, KnownSymbols known, out HookKind kind) {
+		if (known.Hook is not null && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, known.Hook.OriginalDefinition)) {
+			kind = HookKind.Plain;
+			return true;
+		}
+		if (known.ILHook is not null && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, known.ILHook.OriginalDefinition)) {
+			kind = HookKind.Il;
+			return true;
+		}
+		kind = HookKind.None;
 		return false;
 	}
 
-	private static bool isGenericInstructionCollection(ITypeSymbol type, INamedTypeSymbol instructionType) {
-		if (type is not INamedTypeSymbol named || named.TypeArguments.Length != 1)
-			return false;
-		if (!SymbolEqualityComparer.Default.Equals(named.TypeArguments[0], instructionType))
-			return false;
-		// TODO move out these constants
-		return named.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) is
-			"global::System.Collections.Generic.ICollection<T>" or
-			"global::System.Collections.Generic.IList<T>" or
-			"global::System.Collections.Generic.List<T>" or
-			"global::Mono.Collections.Generic.Collection<T>";
-	}
-
-	private static IArgumentOperation? findDelegateArgument(ImmutableArray<IArgumentOperation> args) {
-		foreach (IArgumentOperation arg in args)
-			if (arg.Value.Type?.TypeKind == TypeKind.Delegate)
-				return arg;
+	private static Callable? tryGetCallable(IOperation? op) {
+		while (op is not null) {
+			switch (op) {
+			case IConversionOperation conv:
+				op = conv.Operand;
+				continue;
+			case IParenthesizedOperation paren:
+				op = paren.Operand;
+				continue;
+			case IDelegateCreationOperation delegateCreat:
+				op = delegateCreat.Target;
+				continue;
+			case IMethodReferenceOperation methodRef:
+				return new Callable(methodRef.Method, declaration: null);
+			case IAnonymousFunctionOperation anon:
+				return new Callable(anon.Symbol, anon.Syntax);
+			default:
+				return null;
+			}
+		}
 		return null;
 	}
 
-	private static void maybeReportDelegateArg(OperationAnalysisContext ctx, IArgumentOperation arg, bool isHookMethod, KnownSymbols known) =>
-		maybeReportDelegateValue(ctx, arg.Value, isHookMethod, known);
-
-	private static void maybeReportDelegateValue(OperationAnalysisContext ctx, IOperation op, bool isHook, KnownSymbols known) {
-		(IMethodSymbol? m, DelegateTargetKind kind) = classifyDelegateExpression(op);
-		if (isHook && m is not null && !m.OriginalDefinition.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.HookMethodAttribute)))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.UnmarkedHookMethod, op.Syntax.GetLocation()));
-		switch (kind) {
-		case DelegateTargetKind.PlainStaticMethodGroup:
+	private static void addHook(
+		Dictionary<IMethodSymbol, RegisteredHook> hooks,
+		SyntaxTree tree,
+		Callable callable,
+		HookKind kind,
+		CancellationToken ct
+	) {
+		IMethodSymbol method = (callable.Method.PartialImplementationPart ?? callable.Method).OriginalDefinition;
+		SyntaxNode? decl = callable.Declaration;
+		if (decl is null || decl.SyntaxTree != tree)
+			decl = findDecl(method, tree, ct);
+		if (decl is null)
 			return;
-		case DelegateTargetKind.StaticLambda:
-			ctx.ReportDiagnostic(Diagnostic.Create(isHook ? Diagnostics.Usage.HookStaticLambda : Diagnostics.Usage.EmitDelegateStaticLambda, op.Syntax.GetLocation()));
-			return;
-		case DelegateTargetKind.NonStaticOrUnknown:
-			ctx.ReportDiagnostic(Diagnostic.Create(isHook ? Diagnostics.Usage.NonStaticHookMethod : Diagnostics.Usage.NonStaticEmitDelegateMethod, op.Syntax.GetLocation()));
+		if (hooks.TryGetValue(method, out RegisteredHook? existing)) {
+			existing.Kind |= kind;
 			return;
 		}
+		hooks.Add(method, new RegisteredHook(method, decl, kind));
 	}
 
-	private static (IMethodSymbol? m, DelegateTargetKind kind) classifyDelegateExpression(IOperation op) {
-		while (op is IConversionOperation conv && conv.IsImplicit)
-			op = conv.Operand;
-		if (op is IDelegateCreationOperation del)
-			return classifyDelegateExpression(del.Target);
-		if (op is IMethodReferenceOperation methodRef)
-			return (methodRef.Method, methodRef.Method.IsStatic ? DelegateTargetKind.PlainStaticMethodGroup : DelegateTargetKind.NonStaticOrUnknown);
-		if (op is IAnonymousFunctionOperation anon)
-			return (anon.Symbol, anon.Symbol.IsStatic ? DelegateTargetKind.StaticLambda : DelegateTargetKind.NonStaticOrUnknown);
-		return (null, DelegateTargetKind.NonStaticOrUnknown);
+	private static SyntaxNode? findDecl(IMethodSymbol method, SyntaxTree tree, CancellationToken ct) {
+		SyntaxNode? first = null;
+		foreach (SyntaxReference? sxRef in method.DeclaringSyntaxReferences) {
+			if (sxRef.SyntaxTree != tree)
+				continue;
+			SyntaxNode sx = sxRef.GetSyntax(ct);
+			first ??= sx;
+			if (sx switch {
+				MethodDeclarationSyntax m => m.Body is not null || m.ExpressionBody is not null,
+				LocalFunctionStatementSyntax l => l.Body is not null || l.ExpressionBody is not null,
+				AnonymousFunctionExpressionSyntax => true,
+				_ => false,
+			})
+				return sx;
+		}
+		return first;
+	}
+
+	private static IOperation? getBodyOperation(SemanticModel model, SyntaxNode decl, CancellationToken ct) {
+		return decl switch {
+			MethodDeclarationSyntax { Body: not null } method => model.GetOperation(method.Body, ct),
+			MethodDeclarationSyntax { ExpressionBody: not null } method => model.GetOperation(method.ExpressionBody.Expression, ct),
+			LocalFunctionStatementSyntax { Body: not null } localFn => model.GetOperation(localFn.Body, ct),
+			LocalFunctionStatementSyntax { ExpressionBody: not null } localFn => model.GetOperation(localFn.ExpressionBody.Expression, ct),
+			AnonymousFunctionExpressionSyntax anon => (model.GetOperation(anon, ct) as IAnonymousFunctionOperation)?.Body,
+			_ => null,
+		};
+	}
+
+	private static bool hasInvocationOf(IOperation root, IParameterSymbol param, CancellationToken ct) {
+		Stack<IOperation> pending = new();
+		pending.Push(root);
+		while (pending.Count != 0) {
+			ct.ThrowIfCancellationRequested();
+			IOperation? op = pending.Pop();
+			if (op is IInvocationOperation inv && isInvocationOf(inv, param))
+				return true;
+			foreach (IOperation child in op.ChildOperations)
+				pending.Push(child);
+		}
+		return false;
+	}
+
+	private static bool isDirectInvocationOf(IOperation? op, IParameterSymbol param) {
+		op = unwrap(op);
+		if (op is IInvocationOperation inv)
+			return isInvocationOf(inv, param);
+		if (op is IConditionalAccessOperation condAccess) {
+			IOperation? whenNotNull = unwrap(condAccess.WhenNotNull);
+			return whenNotNull is IInvocationOperation conditionalInvocation &&
+				isInvocationOf(conditionalInvocation, param);
+		}
+		return false;
+	}
+
+	private static bool isInvocationOf(IInvocationOperation inv, IParameterSymbol param) {
+		if (inv.TargetMethod.MethodKind != MethodKind.DelegateInvoke)
+			return false;
+
+		IOperation? inst = unwrap(inv.Instance);
+		if (inst is IParameterReferenceOperation paramRef)
+			return SymbolEqualityComparer.Default.Equals(paramRef.Parameter, param);
+		if (inst is not IConditionalAccessInstanceOperation)
+			return false;
+
+		for (IOperation? parent = inv.Parent; parent is not null; parent = parent.Parent) {
+			if (parent is not IConditionalAccessOperation condAccess)
+				continue;
+			IOperation? receiver = unwrap(condAccess.Operation);
+			return receiver is IParameterReferenceOperation recvRef && SymbolEqualityComparer.Default.Equals(recvRef.Parameter, param);
+		}
+
+		return false;
+	}
+
+	private static IOperation? unwrap(IOperation? op) {
+		while (op is not null) {
+			switch (op) {
+			case IConversionOperation conv:
+				op = conv.Operand;
+				continue;
+			case IParenthesizedOperation paren:
+				op = paren.Operand;
+				continue;
+			default:
+				return op;
+			}
+		}
+		return null;
+	}
+
+	private static IEnumerable<YieldStatementSyntax> getDirectYieldStatements(SyntaxNode decl) => decl
+		.DescendantNodes(node => node is not AnonymousFunctionExpressionSyntax && node is not LocalFunctionStatementSyntax)
+		.OfType<YieldStatementSyntax>()
+		.Where(statement => statement.IsKind(SyntaxKind.YieldReturnStatement));
+
+	private static Location getDeclLocation(IMethodSymbol method, SyntaxNode decl, SyntaxTree tree) {
+		return decl switch {
+			MethodDeclarationSyntax methodDecl => methodDecl.Identifier.GetLocation(),
+			LocalFunctionStatementSyntax localFn => localFn.Identifier.GetLocation(),
+			ParenthesizedLambdaExpressionSyntax lambda => lambda.ArrowToken.GetLocation(),
+			SimpleLambdaExpressionSyntax lambda => lambda.ArrowToken.GetLocation(),
+			AnonymousMethodExpressionSyntax anon => anon.DelegateKeyword.GetLocation(),
+			_ => method.Locations.FirstOrDefault(l => l.IsInSource && l.SourceTree == tree) ?? decl.GetLocation(),
+		};
+	}
+
+	private static Location? getParamLocation(IParameterSymbol param, SyntaxTree tree, CancellationToken ct) {
+		foreach (SyntaxReference? sxRef in param.DeclaringSyntaxReferences) {
+			if (sxRef.SyntaxTree != tree)
+				continue;
+			if (sxRef.GetSyntax(ct) is ParameterSyntax paramSx)
+				return paramSx.Identifier.GetLocation();
+		}
+		return param.Locations.FirstOrDefault(l => l.IsInSource && l.SourceTree == tree);
 	}
 }

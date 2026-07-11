@@ -86,7 +86,8 @@ public static class ILCursorExtensions {
 		public void RequireGotoNext(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>"
 		) => c.RequireGotoNext(expr0, moveType, predicate0);
 
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
@@ -104,8 +105,10 @@ public static class ILCursorExtensions {
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}", moveType, predicate0, predicate1);
 
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
@@ -127,9 +130,12 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}, {expr2}", moveType, predicate0, predicate1, predicate2);
 
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
@@ -155,10 +161,14 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
 			Func<Instruction, bool> predicate3,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr3 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr3 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}, {expr2}, {expr3}", moveType, predicate0, predicate1, predicate2, predicate3);
 
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -171,7 +181,8 @@ public static class ILCursorExtensions {
 		/// </remarks>
 		public void RequireGotoNext(
 			Func<Instruction, bool> predicate0,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>"
 		) => c.RequireGotoNext(expr0, predicate0);
 
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -188,8 +199,10 @@ public static class ILCursorExtensions {
 		public void RequireGotoNext(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}", predicate0, predicate1);
 
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -210,9 +223,12 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}, {expr2}", predicate0, predicate1, predicate2);
 
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -237,10 +253,14 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
 			Func<Instruction, bool> predicate3,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr3 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr3 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}, {expr2}, {expr3}", predicate0, predicate1, predicate2, predicate3);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
@@ -254,7 +274,8 @@ public static class ILCursorExtensions {
 		public void RequireGotoPrev(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>"
 		) => c.RequireGotoPrev(expr0, moveType, predicate0);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
@@ -272,8 +293,10 @@ public static class ILCursorExtensions {
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}", moveType, predicate0, predicate1);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
@@ -295,9 +318,12 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}, {expr2}", moveType, predicate0, predicate1, predicate2);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
@@ -323,10 +349,14 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
 			Func<Instruction, bool> predicate3,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr3 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr3 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}, {expr2}, {expr3}", moveType, predicate0, predicate1, predicate2, predicate3);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -339,7 +369,8 @@ public static class ILCursorExtensions {
 		/// </remarks>
 		public void RequireGotoPrev(
 			Func<Instruction, bool> predicate0,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>"
 		) => c.RequireGotoPrev(expr0, predicate0);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -356,8 +387,10 @@ public static class ILCursorExtensions {
 		public void RequireGotoPrev(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}", predicate0, predicate1);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -378,9 +411,12 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}, {expr2}", predicate0, predicate1, predicate2);
 
 		/// <inheritdoc cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
@@ -405,10 +441,14 @@ public static class ILCursorExtensions {
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
 			Func<Instruction, bool> predicate3,
-			[CallerArgumentExpression(nameof(predicate0))] string expr0 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate1))] string expr1 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))] string expr3 = "<unknown>"
+			[CallerArgumentExpression(nameof(predicate0))]
+			string expr0 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate1))]
+			string expr1 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr2 = "<unknown>",
+			[CallerArgumentExpression(nameof(predicate2))]
+			string expr3 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}, {expr2}, {expr3}", predicate0, predicate1, predicate2, predicate3);
 #pragma warning restore CS8620 // argument cannot be used due to differences in the nullability of reference types (i genuinely don't know why this sometimes gets reported, i think it's a false positive)
 #pragma warning restore CS1573 // parameter has no matching <param> tag

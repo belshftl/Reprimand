@@ -43,7 +43,13 @@ public sealed class TrackerAnalyzer : DiagnosticAnalyzer {
 			if (!typeParam.IsReferenceType)
 				return;
 			if (typeParam.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.TrackedAttribute)))
-				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.NonTrackerLookupOfTrackedEntityType, loc, typeParam.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+				ctx.ReportDiagnostic(
+					Diagnostic.Create(
+						Diagnostics.Usage.NonTrackerLookupOfTrackedEntityType,
+						loc,
+						typeParam.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+					)
+				);
 		}
 	}
 }

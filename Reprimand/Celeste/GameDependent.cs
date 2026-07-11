@@ -64,13 +64,12 @@ internal static class GameDependentTHooks {
 		}
 
 		List<Exception>? failures = null;
-		foreach (IUntypedGameDependentT v in strong) {
+		foreach (IUntypedGameDependentT v in strong)
 			try {
 				v.OnLoadContent();
 			} catch (Exception ex) {
 				(failures ??= new List<Exception>()).Add(ex);
 			}
-		}
 
 		if (failures is not null)
 			throw new AggregateException("one or more GameDependent<T> factories failed", failures);
@@ -84,13 +83,12 @@ internal static class GameDependentTHooks {
 		}
 
 		List<Exception>? failures = null;
-		foreach (IUntypedGameDependentT v in strong) {
+		foreach (IUntypedGameDependentT v in strong)
 			try {
 				v.OnUnloadContent();
 			} catch (Exception ex) {
 				(failures ??= new List<Exception>()).Add(ex);
 			}
-		}
 
 		// probably unnecessary, but do anyways defensively before orig(...) call
 		strong.Clear();

@@ -46,7 +46,7 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 		var @ref = (IEventReferenceOperation)asg.EventReference;
 		IEventSymbol sym = @ref.Event;
 		INamespaceSymbol ns = sym.ContainingNamespace;
-		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent);
+		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent) ;
 		if (ns.Name is not "On" and not "IL")
 			return;
 		if (isOnLoadLifecycleMethod(ctx.ContainingSymbol, known) || isInsideDetourConfigScope(asg, known))
@@ -90,7 +90,7 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 			)
 				return true;
 
-			if (parent is IBlockOperation block) {
+			if (parent is IBlockOperation block)
 				foreach (IOperation stmt in block.Operations) {
 					if (ReferenceEquals(stmt, curr))
 						break;
@@ -100,7 +100,6 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 					)
 						return true;
 				}
-			}
 
 			curr = parent;
 		}
@@ -171,7 +170,7 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 		pending.Push(executableRoot);
 		while (pending.Count != 0) {
 			IOperation candidate = pending.Pop();
-			if (!ReferenceEquals(candidate, executableRoot) && (candidate is IAnonymousFunctionOperation or ILocalFunctionOperation))
+			if (!ReferenceEquals(candidate, executableRoot) && candidate is IAnonymousFunctionOperation or ILocalFunctionOperation)
 				continue;
 			if (!ReferenceEquals(candidate, executableRoot) && candidate.Syntax.SpanStart >= beforePos)
 				continue;

@@ -318,7 +318,11 @@ public static class GlobalSpriteBatch {
 		if (scopeStack.Count != 0)
 			global::Celeste.Mod.Logger.Log(global::Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened while managed scopes are active");
 		if (currParams.HasValue)
-			global::Celeste.Mod.Logger.Log(global::Celeste.Mod.LogLevel.Warn, "Reprimand/GlobalSpriteBatch", "unregistering hooks happened while the global spritebatch is active");
+			global::Celeste.Mod.Logger.Log(
+				global::Celeste.Mod.LogLevel.Warn,
+				"Reprimand/GlobalSpriteBatch",
+				"unregistering hooks happened while the global spritebatch is active"
+			);
 
 		try {
 			beginHook?.Dispose();
@@ -345,7 +349,7 @@ public static class GlobalSpriteBatch {
 	/// <see langword="true"/> if the tracked spritebatch is active; otherwise, <see langword="false"/>.
 	/// </returns>
 	public static bool TryGetCurrentParameters(out BatchParameters @params) {
-		if (currParams is { } curr) {
+		if (currParams is {} curr) {
 			@params = curr;
 			return true;
 		}
@@ -620,7 +624,7 @@ public static class GlobalSpriteBatch {
 	[DontUseInStaticCtor]
 	public static Suspension SuspendIfActive() {
 		throwIfManagedOpUnavailable();
-		return currParams is { } @params ? suspendCore(@params) : default;
+		return currParams is {} @params ? suspendCore(@params) : default;
 	}
 
 	private static Suspension suspendCore(scoped in BatchParameters @params) {
@@ -688,13 +692,12 @@ public static class GlobalSpriteBatch {
 
 				if (restoreEx is not null) {
 					abortCurrentGeneration(batch);
-					if (endEx is not null) {
+					if (endEx is not null)
 						throw new AggregateException(
 							"ending the scoped SpriteBatch failed and restoring its displaced batch also failed",
 							endEx,
 							restoreEx
 						);
-					}
 					rethrow(restoreEx);
 				}
 

@@ -56,7 +56,7 @@ public sealed class DontUseSceneAsMethodCodeFixProvider : CodeFixProvider {
 		// don't offer `Scene as T` when the `T` is definitely invalid for the cast
 		SemanticModel? model = await ctx.Document.GetSemanticModelAsync(ctx.CancellationToken).ConfigureAwait(false);
 		ITypeSymbol? targetType = model?.GetTypeInfo(type, ctx.CancellationToken).Type;
-		if (targetType is not null && canUseAs(targetType)) {
+		if (targetType is not null && canUseAs(targetType))
 			ctx.RegisterCodeFix(
 				CodeAction.Create(
 					title: "Replace SceneAs<T> with 'as' cast",
@@ -72,7 +72,6 @@ public sealed class DontUseSceneAsMethodCodeFixProvider : CodeFixProvider {
 				),
 				diagnostic
 			);
-		}
 	}
 
 	private static bool tryGetReplacementParts(InvocationExpressionSyntax inv, out TypeSyntax type, out ExpressionSyntax scene) {
@@ -133,17 +132,16 @@ public sealed class DontUseSceneAsMethodCodeFixProvider : CodeFixProvider {
 		type = type.WithoutLeadingTrivia().WithoutTrailingTrivia();
 
 		ExpressionSyntax replacement;
-		if (useAs) {
+		if (useAs)
 			// (Scene as T)
 			replacement = SyntaxFactory.ParenthesizedExpression(
 				SyntaxFactory.BinaryExpression(SyntaxKind.AsExpression, scene, type)
 			);
-		} else {
+		else
 			// ((T)Scene)
 			replacement = SyntaxFactory.ParenthesizedExpression(
 				SyntaxFactory.CastExpression(type, scene)
 			);
-		}
 		replacement = replacement.WithTriviaFrom(inv).WithAdditionalAnnotations(Formatter.Annotation);
 
 		return doc.WithSyntaxRoot(root.ReplaceNode(inv, replacement));

@@ -29,7 +29,7 @@ internal static class FontLoadFixer {
 			throw new InternalStateException("expected ILCursor.Next to be nonnull after a successful MoveType.Before match");
 		c.Next.Operand = il.Module.ImportReference(
 			typeof(Dictionary<int, int>).GetProperty("Item")?.GetSetMethod() ??
-				throw new MissingMethodException(nameof(Dictionary<,>), "set_Item")
+			throw new MissingMethodException(nameof(Dictionary<,>), "set_Item")
 		);
 	}
 }

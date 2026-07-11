@@ -10,7 +10,8 @@ internal static class Language {
 	public static readonly DiagnosticDescriptor MissingOpenClassMarker = new(
 		id: "RM0300",
 		title: "Every class should be sealed/abstract or explicitly marked open",
-		messageFormat: "You probably want `sealed class` instead of plain `class`, especially in a Celeste mod; if you know the difference and actually want a plain `class`, mark it with `/* open */`, for example, `public /* open */ class SomeEntity`",
+		messageFormat:
+		"You probably want `sealed class` instead of plain `class`, especially in a Celeste mod; if you know the difference and actually want a plain `class`, mark it with `/* open */`, for example, `public /* open */ class SomeEntity`",
 		category: "Language",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
@@ -46,7 +47,8 @@ internal static class Language {
 	public static readonly DiagnosticDescriptor BaseExceptionTypeThrown = new(
 		id: "RM0304",
 		title: "Base System.Exception type thrown",
-		messageFormat: "Prefer throwing more specific exception types instead of raw Exception, as raw Exception is poorly fit for `catch` or parsing error info; if there's no suitable built-in exception type, make your own",
+		messageFormat:
+		"Prefer throwing more specific exception types instead of raw Exception, as raw Exception is poorly fit for `catch` or parsing error info; if there's no suitable built-in exception type, make your own",
 		category: "Language",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true

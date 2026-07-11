@@ -140,16 +140,15 @@ public sealed class OnLoadIfOptionalDepAttribute : Attribute, IOnLoadLifecycleAt
 	/// Semver version string requesting a compatible mod version, internally parsed into a <see cref="Version"/>.
 	/// </param>
 	public OnLoadIfOptionalDepAttribute(string name, string version) {
-		if (version is not null) {
+		if (version is not null)
 			Wanted = new EverestModuleMetadata {
 				Name = name,
 				Version = Version.Parse(version),
 			};
-		} else {
+		else
 			Wanted = new EverestModuleMetadata {
 				Name = name,
 			};
-		}
 	}
 }
 
@@ -192,15 +191,14 @@ public sealed class OnLoadIfOptionalDepOneshotAttribute : Attribute, IOnLoadLife
 	/// Semver version string requesting a compatible mod version, internally parsed into a <see cref="Version"/>.
 	/// </param>
 	public OnLoadIfOptionalDepOneshotAttribute(string name, string version) {
-		if (version is not null) {
+		if (version is not null)
 			Wanted = new EverestModuleMetadata {
 				Name = name,
 				Version = Version.Parse(version),
 			};
-		} else {
+		else
 			Wanted = new EverestModuleMetadata {
 				Name = name,
 			};
-		}
 	}
 }
