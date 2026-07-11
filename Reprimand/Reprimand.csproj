@@ -8,7 +8,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<PackageId>Reprimand</PackageId>
-		<Version>0.1.0</Version>
+		<Version>0.1.0-beta.0</Version>
 		<Authors>AtBelshftl</Authors>
 		<Description>a utility library for Celeste mods</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
@@ -34,9 +34,4 @@
 	<ItemGroup>
 		<None Include="buildTransitive/$(PackageId).targets" Pack="true" PackagePath="buildTransitive/$(PackageId).targets" />
 	</ItemGroup>
-
-	<Target Name="CopyFiles" AfterTargets="Build">
-		<Copy SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="../Bin" />
-		<Copy SourceFiles="$(OutputPath)/$(AssemblyName).pdb" DestinationFolder="../Bin" />
-	</Target>
 </Project>

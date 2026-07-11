@@ -37,6 +37,6 @@ internal sealed class ReprimandModule : EverestModule {
 
 	public static void ThrowIfInactive() {
 		if (!Instance.Active)
-			throw new InvalidOperationException("the library's hooks are either not active yet or already uninstalled; did you forget to declare an Everest dependency on it?");
+			throw new InvalidOperationException("the library's hooks are either not active yet or already uninstalled; did you forget to declare an Everest dependency on Reprimand.Runtime?");
 	}
 }

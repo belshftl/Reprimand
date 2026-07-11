@@ -2,13 +2,11 @@ name: pack-and-publish
 
 on:
   push:
-    branches: ['main']
-    tags: ['v*']
-  pull_request:
-  workflow_dispatch:
+    tags:
+      - "v*"
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 concurrency:
@@ -29,7 +27,6 @@ env:
 
 jobs:
   check-changes:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       run_ci: ${{ steps.decide.outputs.run_ci }}
@@ -55,8 +52,7 @@ jobs:
           fi
 
   pack-and-push:
-    if: github.event_name != 'pull_request'
-    needs: [check-changes]
+    needs: check-changes
     runs-on: ubuntu-24.04
 
     steps:
@@ -84,30 +80,35 @@ jobs:
           mmhook="${{ runner.temp }}/Vendor/MMHOOK_Celeste.dll"
           curl --fail --location --retry 3 --proto '=https' --tlsv1.2 --output "$mmhook" "$MMHOOK_DLL_URL"
           printf '%s  %s\n' "$MMHOOK_DLL_SHA256" "$mmhook" | sha256sum --check -
-      - name: Get package version
-        id: version
-        shell: bash
-        run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            ver="${GITHUB_REF_NAME#v}"
-          else
-            ver="0.1.0-ci.${GITHUB_RUN_NUMBER}"
-          fi
-          echo "version=$ver" >> "$GITHUB_OUTPUT"
+
       - name: Pack Reprimand
         run: >
-          dotnet pack Reprimand/Reprimand.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget -p:Version=${{ steps.version.outputs.version }}
+          dotnet pack Reprimand/Reprimand.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget
+
       - name: Pack Reprimand.Analyzers
         run: >
-          dotnet pack Reprimand.Analyzers/Reprimand.Analyzers.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget -p:Version=${{ steps.version.outputs.version }}
+          dotnet pack Reprimand.Analyzers/Reprimand.Analyzers.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget
+
       - name: Pack Reprimand.Analyzers.CodeFixes
         run: >
-          dotnet pack Reprimand.Analyzers.CodeFixes/Reprimand.Analyzers.CodeFixes.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget -p:Version=${{ steps.version.outputs.version }}
+          dotnet pack Reprimand.Analyzers.CodeFixes/Reprimand.Analyzers.CodeFixes.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o artifacts/nuget
+
+      - name: Create Reprimand.Runtime zip
+        run: |
+          mkdir RuntimePack
+          dotnet build Reprimand/Reprimand.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/Vendor" -o RuntimePack
+          zip -r Reprimand.Runtime.zip everest.yaml RuntimePack
+
       - name: Add GitHub Packages source
         run: >
-          dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ github.token }}
           --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
       - name: Push packages
         run: >
           dotnet nuget push "artifacts/nuget/*.nupkg" --source github --skip-duplicate
+
+      - name: Push GitHub release for runtime
+        run: >
+          gh release create "$GITHUB_REF_NAME" Reprimand.Runtime.zip --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
 # vim: sw=2 ts=2 sts=2 et

@@ -8,7 +8,7 @@
 		<DevelopmentDependency>true</DevelopmentDependency>
 
 		<PackageId>Reprimand.Analyzers.CodeFixes</PackageId>
-		<Version>0.1.0</Version>
+		<Version>0.1.0-beta.0</Version>
 		<Authors>AtBelshftl</Authors>
 		<Description>codefixes from the analyzer for Celeste mods from the Reprimand project</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>

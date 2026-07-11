@@ -31,7 +31,7 @@ internal static class Usage {
 		messageFormat:
 		"Field/property '{0}' should not be accessed in a static constructor or static field/property initializer as it may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
 		category: "Usage",
-		defaultSeverity: DiagnosticSeverity.Error,
+		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
 
@@ -39,9 +39,9 @@ internal static class Usage {
 		id: "RM0203",
 		title: "Static method should not be called in a static constructor",
 		messageFormat:
-		"Static method '{0}' should not be called in a static constructor or static field/property initializer, as due to Celeste/Everest shortsightedness, state it relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
+		"Static method '{0}' should not be called in a static constructor or static field/property initializer, as due to a Celeste code quirk, state it relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
 		category: "Usage",
-		defaultSeverity: DiagnosticSeverity.Error,
+		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
 
@@ -49,9 +49,9 @@ internal static class Usage {
 		id: "RM0204",
 		title: "Object should not be instantiated in a static constructor",
 		messageFormat:
-		"Objects of type '{0}' should not be instantiated in a static constructor or static field/property initializer, as due to Celeste/Everest shortsightedness, state its constructor relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
+		"Objects of type '{0}' should not be instantiated in a static constructor or static field/property initializer, as due to a Celeste code quirk, state its constructor relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
 		category: "Usage",
-		defaultSeverity: DiagnosticSeverity.Error,
+		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
 
