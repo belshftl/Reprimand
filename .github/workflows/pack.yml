@@ -26,33 +26,7 @@ env:
   MMHOOK_DLL_SHA256: 0a1449c796cbf20c25030b2e4a1c353478c2e848d8e6e0c11556ca1b4023e4e2
 
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      run_ci: ${{ steps.decide.outputs.run_ci }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - id: decide
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            base="${{ github.event.pull_request.base.sha }}"
-          else
-            base="${{ github.event.before }}"
-          fi
-          files="$(git diff --name-only "$base" "$GITHUB_SHA")"
-          if echo "$files" | grep -Eq '^(Reprimand.*/.*|Reprimand.slnx|\.gitmodules|\.github/workflows/.*)$'; then
-            echo "run_ci=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run_ci=false" >> "$GITHUB_OUTPUT"
-          fi
-
   pack-and-push:
-    needs: check-changes
     runs-on: ubuntu-24.04
 
     steps:
