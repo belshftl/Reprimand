@@ -39,6 +39,10 @@ Once the library exits in-dev and switches to major version 1, semver will be us
 
 ## The TODO corner
 
+Pending bugfixes:
+- figure out the deal with suspending a batch in the middle of an entity's `Render`
+- make `GameDependent<T>` init later so that things like `GFX` are available
+
 Current actively worked-on documentation:
 - none yet, sorry
 
