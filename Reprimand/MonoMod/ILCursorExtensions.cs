@@ -26,13 +26,16 @@ public static class ILCursorExtensions {
 		/// <param name="predicates">
 		/// Predicates used for <see cref="ILCursor"/> instruction matching.
 		/// </param>
+		/// <returns>
+		/// The same <see cref="ILCursor"/> object that the call was performed on.
+		/// </returns>
 		/// <exception cref="ILPatternNotFoundException">
 		/// Thrown if the expected sequence of instructions was not found.
 		/// </exception>
-		public void RequireGotoNext(string expected, MoveType moveType = MoveType.Before, params Func<Instruction, bool>[] predicates) {
+		public ILCursor RequireGotoNext(string expected, MoveType moveType = MoveType.Before, params Func<Instruction, bool>[] predicates) {
 			int start = c.Index;
 			if (c.TryGotoNext(moveType, predicates))
-				return;
+				return c;
 			string target = c.Context.Method.FullName ?? c.Context.Method.Name ?? "<name unavailable>";
 			throw new ILPatternNotFoundException(target, expected, start, ILPatternSearchDirection.Forward);
 		}
@@ -43,7 +46,7 @@ public static class ILCursorExtensions {
 		/// sequence is not found.
 		/// </summary>
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
-		public void RequireGotoNext(string expected, params Func<Instruction, bool>[] predicates) =>
+		public ILCursor RequireGotoNext(string expected, params Func<Instruction, bool>[] predicates) =>
 			c.RequireGotoNext(expected, moveType: MoveType.Before, predicates);
 
 		/// <summary>
@@ -52,10 +55,10 @@ public static class ILCursorExtensions {
 		/// sequence is not found.
 		/// </summary>
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
-		public void RequireGotoPrev(string expected, MoveType moveType = MoveType.Before, params Func<Instruction, bool>[] predicates) {
+		public ILCursor RequireGotoPrev(string expected, MoveType moveType = MoveType.Before, params Func<Instruction, bool>[] predicates) {
 			int start = c.Index;
 			if (c.TryGotoPrev(moveType, predicates))
-				return;
+				return c;
 			string target = c.Context.Method.FullName ?? c.Context.Method.Name ?? "<name unavailable>";
 			throw new ILPatternNotFoundException(target, expected, start, ILPatternSearchDirection.Backward);
 		}
@@ -66,7 +69,7 @@ public static class ILCursorExtensions {
 		/// sequence is not found.
 		/// </summary>
 		/// <inheritdoc cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
-		public void RequireGotoPrev(string expected, params Func<Instruction, bool>[] predicates) =>
+		public ILCursor RequireGotoPrev(string expected, params Func<Instruction, bool>[] predicates) =>
 			c.RequireGotoPrev(expected, moveType: MoveType.Before, predicates);
 
 		// ==============================================================================================
@@ -83,7 +86,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expression.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			[CallerArgumentExpression(nameof(predicate0))]
@@ -101,7 +104,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
@@ -125,7 +128,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
@@ -155,7 +158,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
@@ -167,7 +170,7 @@ public static class ILCursorExtensions {
 			string expr1 = "<unknown>",
 			[CallerArgumentExpression(nameof(predicate2))]
 			string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))]
+			[CallerArgumentExpression(nameof(predicate3))]
 			string expr3 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}, {expr2}, {expr3}", moveType, predicate0, predicate1, predicate2, predicate3);
 
@@ -179,7 +182,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expression.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			Func<Instruction, bool> predicate0,
 			[CallerArgumentExpression(nameof(predicate0))]
 			string expr0 = "<unknown>"
@@ -196,7 +199,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			[CallerArgumentExpression(nameof(predicate0))]
@@ -219,7 +222,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
@@ -248,7 +251,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoNext(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoNext(
+		public ILCursor RequireGotoNext(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
@@ -259,7 +262,7 @@ public static class ILCursorExtensions {
 			string expr1 = "<unknown>",
 			[CallerArgumentExpression(nameof(predicate2))]
 			string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))]
+			[CallerArgumentExpression(nameof(predicate3))]
 			string expr3 = "<unknown>"
 		) => c.RequireGotoNext($"{expr0}, {expr1}, {expr2}, {expr3}", predicate0, predicate1, predicate2, predicate3);
 
@@ -271,7 +274,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expression.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			[CallerArgumentExpression(nameof(predicate0))]
@@ -289,7 +292,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
@@ -313,7 +316,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
@@ -343,7 +346,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, MoveType, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			MoveType moveType,
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
@@ -355,7 +358,7 @@ public static class ILCursorExtensions {
 			string expr1 = "<unknown>",
 			[CallerArgumentExpression(nameof(predicate2))]
 			string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))]
+			[CallerArgumentExpression(nameof(predicate3))]
 			string expr3 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}, {expr2}, {expr3}", moveType, predicate0, predicate1, predicate2, predicate3);
 
@@ -367,7 +370,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expression.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			Func<Instruction, bool> predicate0,
 			[CallerArgumentExpression(nameof(predicate0))]
 			string expr0 = "<unknown>"
@@ -384,7 +387,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			[CallerArgumentExpression(nameof(predicate0))]
@@ -407,7 +410,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
@@ -436,7 +439,7 @@ public static class ILCursorExtensions {
 		/// Convenience overload for <see cref="RequireGotoPrev(ILCursor, string, Func{Instruction, bool}[])"/>
 		/// that auto-generates the description string from the caller argument expressions.
 		/// </remarks>
-		public void RequireGotoPrev(
+		public ILCursor RequireGotoPrev(
 			Func<Instruction, bool> predicate0,
 			Func<Instruction, bool> predicate1,
 			Func<Instruction, bool> predicate2,
@@ -447,7 +450,7 @@ public static class ILCursorExtensions {
 			string expr1 = "<unknown>",
 			[CallerArgumentExpression(nameof(predicate2))]
 			string expr2 = "<unknown>",
-			[CallerArgumentExpression(nameof(predicate2))]
+			[CallerArgumentExpression(nameof(predicate3))]
 			string expr3 = "<unknown>"
 		) => c.RequireGotoPrev($"{expr0}, {expr1}, {expr2}, {expr3}", predicate0, predicate1, predicate2, predicate3);
 #pragma warning restore CS8620 // argument cannot be used due to differences in the nullability of reference types (i genuinely don't know why this sometimes gets reported, i think it's a false positive)

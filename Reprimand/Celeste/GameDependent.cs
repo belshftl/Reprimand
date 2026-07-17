@@ -42,18 +42,18 @@ internal static class GameDependentTHooks {
 
 	[OnLoad(UndoMethod = nameof(UnregisterHooks))]
 	public static void RegisterHooks() {
-		On.Monocle.Engine.LoadContent += on_Engine_LoadContent;
+		On.Celeste.Celeste.LoadContent += on_Celeste_LoadContent;
 		On.Monocle.Engine.UnloadContent += on_Engine_UnloadContent;
 	}
 
 	public static void UnregisterHooks() {
-		On.Monocle.Engine.LoadContent -= on_Engine_LoadContent;
+		On.Celeste.Celeste.LoadContent -= on_Celeste_LoadContent;
 		On.Monocle.Engine.UnloadContent -= on_Engine_UnloadContent;
 	}
 
-	private static void on_Engine_LoadContent(On.Monocle.Engine.orig_LoadContent orig, Engine self) {
+	private static void on_Celeste_LoadContent(On.Celeste.Celeste.orig_LoadContent orig, global::Celeste.Celeste self) {
 		if (Interlocked.Exchange(ref everLoaded, 1) != 0)
-			throw new InvalidOperationException("Engine.LoadContent got invoked more than once; was assuming reload cannot happen");
+			throw new InvalidOperationException("Celeste.LoadContent got invoked more than once; was assuming reload cannot happen");
 
 		orig(self);
 
@@ -113,10 +113,10 @@ internal static class GameDependentTHooks {
 /// The factory is invoked, as such creating the value, either:
 /// <list type="bullet">
 /// <item><description>
-/// During <see cref="Engine.LoadContent()"/>, after the base game's initialization has completed,
+/// During <see cref="global::Celeste.Celeste.LoadContent()"/>, after the base game's initialization has completed,
 /// </description></item>
 /// <item><description>
-/// or immediately in the constructor, if the base game's portion of <see cref="Engine.LoadContent()"/>
+/// or immediately in the constructor, if the base game's portion of <see cref="global::Celeste.Celeste.LoadContent()"/>
 /// has already completed and <see cref="Engine.UnloadContent()"/> hasn't been invoked yet.
 /// </description></item>
 /// </list>

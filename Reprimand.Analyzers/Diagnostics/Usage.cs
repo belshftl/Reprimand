@@ -109,7 +109,7 @@ internal static class Usage {
 		id: "RM0210",
 		title: "Use RequireGoto{Next,Prev} instead of plain Goto{Next,Prev}",
 		messageFormat:
-		"Use ILCursor.RequireGoto{{Next,Prev}} from Reprimand.MonoMod instead of plain Goto{{Next,Prev}} as they provide much better exceptions/messages on match failure",
+		"Use ILCursor.RequireGoto{Next,Prev} from Reprimand.MonoMod instead of plain Goto{Next,Prev} as they provide much better exceptions/messages on match failure",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true

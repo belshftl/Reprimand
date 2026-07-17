@@ -26,6 +26,8 @@ public sealed class IlHookTargetAnalyzer : DiagnosticAnalyzer {
 
 	private static void analyzeEventAssignment(OperationAnalysisContext ctx) {
 		var asg = (IEventAssignmentOperation)ctx.Operation;
+		if (!asg.Adds)
+			return;
 		var @ref = (IEventReferenceOperation)asg.EventReference;
 		IEventSymbol sym = @ref.Event;
 		INamedTypeSymbol hookType = sym.ContainingType;

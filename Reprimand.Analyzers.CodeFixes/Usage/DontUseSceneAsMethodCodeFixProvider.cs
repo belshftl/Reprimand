@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
 
-namespace Reprimand.Analyzers.CodeFixes.Discouraged;
+namespace Reprimand.Analyzers.CodeFixes.Usage;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DontUseSceneAsMethodCodeFixProvider))]
 [Shared]

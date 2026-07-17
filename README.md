@@ -39,18 +39,14 @@ Once the library exits in-dev and switches to major version 1, semver will be us
 
 ## The TODO corner
 
-Pending bugfixes:
-- figure out the deal with suspending a batch in the middle of an entity's `Render`
-- make `GameDependent<T>` init later so that things like `GFX` are available
-
 Current actively worked-on documentation:
-- none yet, sorry
+- manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 
 Currently actively worked-on library features:
-- adding more features to the roslyn analyzer
+- a more ergonomic to use logger API with custom sinks incl. a default `Logger` sink and an ingame GUI sink
+- a way to report usage errors / etc. from entities without a crash, probably with an in-game popup
 
 Planned documentation (roughly in highest-to-lowest priority order but subject to be reordered at any time):
-- manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 - input stack behavior, where 2D axis input is normalized between circle/square, `Check`/`Released` interactions with buffering, buffering edge cases like changing `BufferTime` mid-buffer, whether a press+release within a single frame produces nothing or `Pressed`+`Released`, etc.
 - `EntityData` and entity IDs
 - `Level.Render()` structure, what matrices are applied where, and how/where to render HD elements
@@ -60,13 +56,10 @@ Planned documentation (roughly in highest-to-lowest priority order but subject t
 - how to interop with SRT and how the save/load actually work
 
 Planned library features (roughly in highest-to-lowest priority order but subject to be reordered at any time):
-- simple [Lönn](https://github.com/CelestialCartographers/Loenn) lua plugin generator from attributes on entities/triggers/stylegrounds
-- a more ergonomic to use logger API with custom sinks incl. a default `Logger` sink and an ingame GUI sink
-- more comprehensive roslyn analyzer, Everest's kinda sucks, as well as maybe some additional sourcegen utilities
+- SRT-like reusable custom hotkeys menu so that you can add things like descriptions to buttons and headers/subheaders and split them into sections and such
+- [Lönn](https://github.com/CelestialCartographers/Loenn) lua plugin generator from attributes on entities/triggers/stylegrounds
 - better state management utilities for entities and some kind of interface with "on SRT savestate save" / "on SRT savestate load"
-- make the Lönn lua plugin generator fancier
 - hi-res input event stream API and input override layers
 - standard expression evaluator, `EntityData.Expr()`, ergonomic expression reeval/hot-reload
 - opt-in expression eval for string fields in every entity including ones without explicit support, basic reflective hot reload for common cases
 - new dialogue format with better hot reload and conditional/random/generated dialogue values and caching of evaluated values
-- SRT-like reusable custom hotkeys menu so that you can add things like descriptions to buttons and headers/subheaders and split them into sections and such
