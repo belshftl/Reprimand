@@ -7,6 +7,8 @@
 		<Nullable>enable</Nullable>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
 		<PackageId>Reprimand</PackageId>
 		<Version>0.1.0-beta.0</Version>
 		<Authors>AtBelshftl</Authors>
@@ -17,11 +19,16 @@
 		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 
-		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../Vendor')">../Vendor</CelestePrefix>
+		<VendorPath Condition="'$(VendorPath)' == '' And Exists('../Vendor')">../Vendor</VendorPath>
+		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../../../Celeste.dll')">../../..</CelestePrefix>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4" />
+		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4" ExcludeAssets="runtime" />
+		<PackageReference Include="FontStashSharp.Base" Version="1.2.3" />
+		<PackageReference Include="FontStashSharp.Rasterizers.StbTrueTypeSharp" Version="1.2.3" />
+		<PackageReference Include="FontStashSharp.Rasterizers.FreeType" Version="1.2.3" />
+		<Reference Include="$(VendorPath)/FontStashSharp.FNA.dll" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -33,5 +40,11 @@
 
 	<ItemGroup>
 		<None Include="buildTransitive/$(PackageId).targets" Pack="true" PackagePath="buildTransitive/$(PackageId).targets" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources/Fonts/JetBrainsMonoNL-Bold.ttf">
+			<LogicalName>fonts/JetBrainsMonoNL-Bold.ttf</LogicalName>
+		</EmbeddedResource>
 	</ItemGroup>
 </Project>

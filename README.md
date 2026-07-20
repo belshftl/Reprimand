@@ -40,10 +40,10 @@ Once the library exits in-dev and switches to major version 1, semver will be us
 ## The TODO corner
 
 Current actively worked-on documentation:
+- displaying things
 - manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 
 Currently actively worked-on library features:
-- a more ergonomic to use logger API with custom sinks incl. a default `Logger` sink and an ingame GUI sink
 - a way to report usage errors / etc. from entities without a crash, probably with an in-game popup
 
 Planned documentation (roughly in highest-to-lowest priority order but subject to be reordered at any time):
@@ -56,10 +56,9 @@ Planned documentation (roughly in highest-to-lowest priority order but subject t
 - how to interop with SRT and how the save/load actually work
 
 Planned library features (roughly in highest-to-lowest priority order but subject to be reordered at any time):
+- maybe something for native library packaging? everest has a thing for this but it sucks because it doesn't distinguish architectures
+- more HookGen-like events for hooks, for example `RM.IL.Celeste.Player.orig_Update += il_Player_OrigUpdate;`
+- convenience events for just drawing things onscreen that fire e.g during `Level.Render`
+- a more ergonomic to use logger API with custom sinks incl. a default `Logger` sink and an ingame GUI sink
 - SRT-like reusable custom hotkeys menu so that you can add things like descriptions to buttons and headers/subheaders and split them into sections and such
 - [Lönn](https://github.com/CelestialCartographers/Loenn) lua plugin generator from attributes on entities/triggers/stylegrounds
-- better state management utilities for entities and some kind of interface with "on SRT savestate save" / "on SRT savestate load"
-- hi-res input event stream API and input override layers
-- standard expression evaluator, `EntityData.Expr()`, ergonomic expression reeval/hot-reload
-- opt-in expression eval for string fields in every entity including ones without explicit support, basic reflective hot reload for common cases
-- new dialogue format with better hot reload and conditional/random/generated dialogue values and caching of evaluated values
