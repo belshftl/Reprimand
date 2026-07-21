@@ -42,7 +42,7 @@ public static class LifecycleAttrRunner {
 	/// </remarks>
 	public static LifecycleAttrCallRecord OnLoad(Assembly asm, string detourId) {
 		List<MethodInfo> undoList = new();
-		foreach ((MethodInfo m, IOnLoadLifecycleAttribute a) in getOnLoadMethods(asm, typeof(OnLoadAttribute), typeof(OnLoadIfOptionalDepAttribute))) {
+		foreach ((MethodInfo m, IOnLoadLifecycleAttribute a) in getOnLoadMethods(asm, typeof(OnLoadAttribute), typeof(OnLoadOneshotAttribute), typeof(OnLoadIfOptionalDepAttribute), typeof(OnLoadIfOptionalDepOneshotAttribute))) {
 			if (m.DeclaringType is null) {
 				Logger.Log(LogLevel.Warn, "Reprimand/LifecycleAttrRunner", $"on-load lifecycle method '{m.Name}' has no declaring type; not calling it");
 				continue;

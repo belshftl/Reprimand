@@ -11,7 +11,7 @@
 
 		<PackageId>Reprimand</PackageId>
 		<Version>0.1.0-beta.0</Version>
-		<Authors>AtBelshftl</Authors>
+		<Authors>belshftl</Authors>
 		<Description>a utility library for Celeste mods</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
 		<!-- nuget only supports spdx v2, TODO figure something out -->
@@ -28,6 +28,7 @@
 		<PackageReference Include="FontStashSharp.Base" Version="1.2.3" />
 		<PackageReference Include="FontStashSharp.Rasterizers.StbTrueTypeSharp" Version="1.2.3" />
 		<PackageReference Include="FontStashSharp.Rasterizers.FreeType" Version="1.2.3" />
+		<PackageReference Include="AtBelshftl.FreeTypeSharp.NativeAssets.LinuxArm64" Version="1.0.0" />
 		<Reference Include="$(VendorPath)/FontStashSharp.FNA.dll" />
 	</ItemGroup>
 
