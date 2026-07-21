@@ -1,4 +1,4 @@
-name: pack-and-publish
+name: Build, package, and push
 
 on:
   push:

@@ -10,7 +10,7 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
 		<PackageId>Reprimand</PackageId>
-		<Version>0.1.0-beta.0</Version>
+		<Version>0.1.0-beta.1</Version>
 		<Authors>belshftl</Authors>
 		<Description>a utility library for Celeste mods</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
