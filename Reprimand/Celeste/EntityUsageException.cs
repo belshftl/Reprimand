@@ -27,7 +27,12 @@ public /* open */ class EntityUsageException : Exception {
 	/// <summary>
 	/// The entity that threw the exception.
 	/// </summary>
-	public Entity Entity { get; }
+	/// <remarks>
+	/// <b>May be partially constructed.</b> If the base ctor ran and then the deriving type's
+	/// ctor threw this exception, you've now got a partially constructed instance of the deriving type.
+	/// It's still fine to use as an <see cref="Entity"/> instance, but be careful.
+	/// </remarks>
+	internal Entity Entity { get; }
 
 	/// <summary>
 	/// Constructs a new instance of <see cref="EntityUsageException"/>; only directly accessible
