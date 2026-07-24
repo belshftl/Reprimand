@@ -13,8 +13,9 @@ under a combined project name.
 
 ## Current library features
 - a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 40 unique diagnostics and counting
-- `[OnLoad]` / etc. lifecycle attributes with deterministic call order and undo tied to the same attribute for clean reverse-registration-order cleanup
+- a way to report entity/trigger usage errors without a crash from a thrown exception by displaying an in-game error popup for the mapper
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
+- `[OnLoad]` / etc. lifecycle attributes with deterministic call order and undo tied to the same attribute for clean reverse-registration-order cleanup
 - API to be able to bind the backbuffer without clearing it, even if the `RenderTargetUsage` isn't set to `PreserveContents`
 - a replacement for `ILCursor.Goto{Next,Prev}` with much better match-fail exceptions
 
@@ -44,7 +45,7 @@ Current actively worked-on documentation:
 - manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 
 Currently actively worked-on library features:
-- a way to report usage errors / etc. from entities without a crash, probably with an in-game popup
+- more HookGen-like events for hooks, for example `RM.IL.Celeste.Player.orig_Update += il_Player_OrigUpdate;`
 
 Planned documentation (roughly in highest-to-lowest priority order but subject to be reordered at any time):
 - input stack behavior, where 2D axis input is normalized between circle/square, `Check`/`Released` interactions with buffering, buffering edge cases like changing `BufferTime` mid-buffer, whether a press+release within a single frame produces nothing or `Pressed`+`Released`, etc.
@@ -56,9 +57,8 @@ Planned documentation (roughly in highest-to-lowest priority order but subject t
 - how to interop with SRT and how the save/load actually work
 
 Planned library features (roughly in highest-to-lowest priority order but subject to be reordered at any time):
-- maybe something for native library packaging? everest has a thing for this but it sucks because it doesn't distinguish architectures
-- more HookGen-like events for hooks, for example `RM.IL.Celeste.Player.orig_Update += il_Player_OrigUpdate;`
+- more features for the roslyn analyzer
 - convenience events for just drawing things onscreen that fire e.g during `Level.Render`
+- maybe something for native library packaging? everest has a thing for this but it sucks because it doesn't distinguish architectures
 - a more ergonomic to use logger API with custom sinks incl. a default `Logger` sink and an ingame GUI sink
 - SRT-like reusable custom hotkeys menu so that you can add things like descriptions to buttons and headers/subheaders and split them into sections and such
-- [Lönn](https://github.com/CelestialCartographers/Loenn) lua plugin generator from attributes on entities/triggers/stylegrounds
