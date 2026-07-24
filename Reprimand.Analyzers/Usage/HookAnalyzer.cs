@@ -145,7 +145,9 @@ public sealed class HookAnalyzer : DiagnosticAnalyzer {
 
 	private static bool tryClassifyHookGenEvent(IEventSymbol ev, out HookKind kind) {
 		INamespaceSymbol ns = ev.ContainingNamespace;
-		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent) ;
+		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent)
+			if (parent is { Name: "RM", ContainingNamespace.IsGlobalNamespace: true })
+				break;
 		switch (ns.Name) {
 		case "On":
 			kind = HookKind.Plain;

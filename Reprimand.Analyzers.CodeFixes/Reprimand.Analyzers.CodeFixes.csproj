@@ -9,7 +9,7 @@
 
 		<PackageId>Reprimand.Analyzers.CodeFixes</PackageId>
 		<Version>0.1.0-beta.1</Version>
-		<Authors>AtBelshftl</Authors>
+		<Authors>belshftl</Authors>
 		<Description>codefixes from the analyzer for Celeste mods from the Reprimand project</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
 		<!-- nuget only supports spdx v2, TODO figure something out -->

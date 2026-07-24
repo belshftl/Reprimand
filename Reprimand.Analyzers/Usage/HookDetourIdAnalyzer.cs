@@ -46,7 +46,9 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 		var @ref = (IEventReferenceOperation)asg.EventReference;
 		IEventSymbol sym = @ref.Event;
 		INamespaceSymbol ns = sym.ContainingNamespace;
-		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent) ;
+		for (; ns.ContainingNamespace is { IsGlobalNamespace: false } parent; ns = parent)
+			if (parent is { Name: "RM", ContainingNamespace.IsGlobalNamespace: true })
+				break;
 		if (ns.Name is not "On" and not "IL")
 			return;
 		if (isOnLoadLifecycleMethod(ctx.ContainingSymbol, known) || isInsideDetourConfigScope(asg, known))

@@ -59,7 +59,9 @@ public sealed class IlHookTargetAnalyzer : DiagnosticAnalyzer {
 		for (INamespaceSymbol? curr = ns; curr is { IsGlobalNamespace: false }; curr = curr.ContainingNamespace)
 			nsParts.Add(curr.Name);
 		nsParts.Reverse();
-		if (nsParts.Count == 0 || nsParts[0] != "IL")
+		bool plain = nsParts.Count > 0 && nsParts[0] == "IL";
+		bool extra = nsParts.Count > 1 && nsParts[0] == "RM" && nsParts[1] == "IL";
+		if (!plain && !extra)
 			return false;
 
 		ImmutableArray<INamedTypeSymbol>.Builder containingTypes = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
@@ -68,8 +70,8 @@ public sealed class IlHookTargetAnalyzer : DiagnosticAnalyzer {
 		containingTypes.Reverse();
 
 		StringBuilder sb = new();
-		// strip leading `IL.`
-		for (int i = 1; i < nsParts.Count; i++) {
+		// strip leading `IL.` / `RM.IL.`
+		for (int i = extra ? 2 : 1; i < nsParts.Count; i++) {
 			if (sb.Length != 0)
 				sb.Append('.');
 			sb.Append(nsParts[i]);

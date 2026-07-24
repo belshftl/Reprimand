@@ -1,5 +1,7 @@
-.idea
-Reprimand*/bin
-Reprimand*/obj
-RuntimePack
-TestMod
+/.DS_Store
+/*/.DS_Store
+/.idea
+/Reprimand*/bin
+/Reprimand*/obj
+/RuntimePack
+/TestMod

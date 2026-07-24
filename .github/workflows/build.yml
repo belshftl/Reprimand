@@ -67,6 +67,10 @@ jobs:
         run: >
           dotnet pack Reprimand.Analyzers.CodeFixes/Reprimand.Analyzers.CodeFixes.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/CelestePrefix" -o artifacts/nuget
 
+      - name: Pack Reprimand.Mmhook
+        run: >
+          dotnet pack Reprimand.Mmhook/Reprimand.Mmhook.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/CelestePrefix" -o artifacts/nuget
+
       - name: Create Reprimand.Runtime zip
         run: |
           mkdir RuntimePack
