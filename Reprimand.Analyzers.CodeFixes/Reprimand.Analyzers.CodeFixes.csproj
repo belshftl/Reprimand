@@ -12,8 +12,7 @@
 		<Authors>belshftl</Authors>
 		<Description>codefixes from the analyzer for Celeste mods from the Reprimand project</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
-		<!-- nuget only supports spdx v2, TODO figure something out -->
-		<!-- <PackageLicenseExpression>LGPL-3.0-only WITH AdditionRef-LGPLv3-Celeste-Target-Platform-Exception</PackageLicenseExpression> -->
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
