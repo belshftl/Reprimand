@@ -247,15 +247,6 @@ public static class GlobalSpriteBatch {
 	public static bool IsManagedActive => currParams.HasValue && scopeStack.Count != 0 && scopeStack[^1].Kind == ScopeKind.Batch;
 
 	/// <summary>
-	/// The tracked global spritebatch.
-	/// </summary>
-	/// <exception cref="InvalidOperationException">
-	/// Thrown if the global spritebatch has not been initialized or changed after tracking began.
-	/// </exception>
-	[DontUseInStaticCtor]
-	public static SpriteBatch Batch => getTrackedBatch();
-
-	/// <summary>
 	/// The effective parameters of the active spritebatch, or <see langword="null"/> if there is
 	/// no currently active batch.
 	/// </summary>

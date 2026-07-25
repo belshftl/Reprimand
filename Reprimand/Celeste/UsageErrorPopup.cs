@@ -235,8 +235,8 @@ internal static class UsageErrorPopup {
 
 				const string header = "Entity or trigger usage error:";
 				Vector2 headerSize = font.MeasureString(header + " ");
-				GlobalSpriteBatch.Batch.DrawString(font, header, origin + pen + Vector2.One * Margin, ErrorTextColor);
-				GlobalSpriteBatch.Batch.DrawString(font, $"(thrown from {info.ThrownFrom})", origin + pen + Vector2.One * Margin + Vector2.UnitX * headerSize.X, FaintTextColor);
+				Draw.SpriteBatch.DrawString(font, header, origin + pen + Vector2.One * Margin, ErrorTextColor);
+				Draw.SpriteBatch.DrawString(font, $"(thrown from {info.ThrownFrom})", origin + pen + Vector2.One * Margin + Vector2.UnitX * headerSize.X, FaintTextColor);
 				pen.Y += font.LineHeight;
 
 				string? displayName = null;
@@ -245,7 +245,7 @@ internal static class UsageErrorPopup {
 					displayName = a.IDs.FirstOrDefault();
 				displayName ??= type?.Name ?? "<unknown>";
 
-				GlobalSpriteBatch.Batch.DrawString(font, $"'{displayName}' with ID {info.Id} at x={info.Position.X:F2}, y={info.Position.Y:F2}:", origin + pen + Vector2.One * Margin, BodyTextColor);
+				Draw.SpriteBatch.DrawString(font, $"'{displayName}' with ID {info.Id} at x={info.Position.X:F2}, y={info.Position.Y:F2}:", origin + pen + Vector2.One * Margin, BodyTextColor);
 				pen.Y += font.LineHeight / 2f; // this looked nicer at 1/2 than full height
 
 				pen.X += Margin;
@@ -253,7 +253,7 @@ internal static class UsageErrorPopup {
 				pen.Y += font.LineHeight;
 
 				string wrapped = wrapAssumingMonospace(info.Message ?? "<null>", cols);
-				GlobalSpriteBatch.Batch.DrawString(font, wrapped, origin + pen + Vector2.One * Margin, BodyTextColor);
+				Draw.SpriteBatch.DrawString(font, wrapped, origin + pen + Vector2.One * Margin, BodyTextColor);
 			}
 			using (GlobalSpriteBatch.Begin(blendState: BlendState.Additive, samplerState: SamplerState.LinearWrap, rasterizerState: new RasterizerState() { CullMode = CullMode.None, ScissorTestEnable = true }, transformMatrix: Engine.ScreenMatrix))
 				OVR.Atlas["overlay"].Draw(Vector2.Zero, Vector2.Zero, Color.White * 0.3f);

@@ -15,8 +15,7 @@ namespace Reprimand.Analyzers.Graphics;
 public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 		Diagnostics.Graphics.SpriteBatchOwnedExternally,
-		Diagnostics.Graphics.NonGlobalSpriteBatchUsage,
-		Diagnostics.Graphics.DrawSpriteBatchUsed
+		Diagnostics.Graphics.NonGlobalSpriteBatchUsage
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -139,11 +138,7 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 			return;
 		if (isWithinNameOf(op))
 			return;
-		if (known.GlobalSpriteBatchProperty is null || matchesProperty(op, known.GlobalSpriteBatchProperty))
-			return;
-		if (known.DrawSpriteBatchProperty is not null && matchesProperty(op, known.DrawSpriteBatchProperty))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Graphics.DrawSpriteBatchUsed, op.Syntax.GetLocation()));
-		else
+		if (known.DrawSpriteBatchProperty is not null && !matchesProperty(op, known.DrawSpriteBatchProperty))
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Graphics.NonGlobalSpriteBatchUsage, op.Syntax.GetLocation()));
 	}
 

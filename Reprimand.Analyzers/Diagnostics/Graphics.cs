@@ -25,14 +25,5 @@ internal static class Graphics {
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
-
-	public static readonly DiagnosticDescriptor DrawSpriteBatchUsed = new(
-		id: "RM0102",
-		title: "Use the global SpriteBatch through GlobalSpriteBatch",
-		messageFormat: "Use the global SpriteBatch through GlobalSpriteBatch.Batch instead of Draw.SpriteBatch for stylistic consistency",
-		category: "Graphics",
-		defaultSeverity: DiagnosticSeverity.Info,
-		isEnabledByDefault: true
-	);
 #pragma warning restore RS2008 // enable analyzer release tracking
 }

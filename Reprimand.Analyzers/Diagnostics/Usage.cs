@@ -119,7 +119,7 @@ internal static class Usage {
 		id: "RM0211",
 		title: "Declare hooks under detour IDs",
 		messageFormat:
-		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods",
+		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods. Reprimand's built-in lifecycle attributes such as [OnLoad] do this for you.",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true

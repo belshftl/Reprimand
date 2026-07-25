@@ -50,7 +50,7 @@ internal static class Language {
 		messageFormat:
 		"Prefer throwing more specific exception types instead of raw Exception, as raw Exception is poorly fit for `catch` or parsing error info; if there's no suitable built-in exception type, make your own",
 		category: "Language",
-		defaultSeverity: DiagnosticSeverity.Warning,
+		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
 	);
 #pragma warning restore RS2008 // enable analyzer release tracking
