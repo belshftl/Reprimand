@@ -16,7 +16,6 @@
 		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 
-		<VendorPath Condition="'$(VendorPath)' == '' And Exists('../Vendor')">../Vendor</VendorPath>
 		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../../../Celeste.dll')">../../..</CelestePrefix>
 	</PropertyGroup>
 
