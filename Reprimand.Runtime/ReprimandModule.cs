@@ -21,7 +21,7 @@ internal sealed class ReprimandRuntimeModule : EverestModule {
 #if DEBUG
 		Logger.SetLogLevel("Reprimand.Runtime", LogLevel.Verbose);
 #else
-		Logger.SetLogLevel("Reprimand".Runtime, LogLevel.Info);
+		Logger.SetLogLevel("Reprimand.Runtime", LogLevel.Info);
 #endif
 	}
 
