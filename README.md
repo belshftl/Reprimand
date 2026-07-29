@@ -47,7 +47,7 @@ Current actively worked-on documentation:
 - manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 
 Currently actively worked-on library features:
-- convenience events for just drawing things onscreen that fire e.g during `Level.Render`
+- sourcegen'd logger wrapper, `Logger` kinda sucks to use because you have to manually type out a tag string every time, which really gets in your way during quick-and-dirty logging
 
 Planned documentation (roughly in highest-to-lowest priority order but subject to be reordered at any time):
 - displaying things
@@ -60,6 +60,7 @@ Planned documentation (roughly in highest-to-lowest priority order but subject t
 - how to interop with SRT and how the save/load actually work
 
 Planned library features (roughly in highest-to-lowest priority order but subject to be reordered at any time):
+- convenience events for just drawing things onscreen that fire e.g during `Level.Render`
 - more features for the roslyn analyzer
 - maybe something for native library packaging? everest has a thing for this but it sucks because it doesn't distinguish architectures
 - a more ergonomic to use logger API with custom sinks incl. a default `Logger` sink and an ingame GUI sink

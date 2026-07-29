@@ -62,16 +62,16 @@ internal static class NativeLibLoader {
 		using Stream ftStream = ftAsset.Stream;
 		string ftSha256 = Convert.ToHexString(SHA256.HashData(ftStream));
 		ftStream.Position = 0;
-		string ftOutRoot = Path.Combine(Everest.PathGame, "Reprimand", "cache", "freetype", rid);
+		string ftOutRoot = Path.Combine(Everest.PathGame, "Reprimand.Runtime", "cache", "freetype", rid);
 		string ftOutDir = Path.Combine(ftOutRoot, ftSha256);
 		string ftOutPath = Path.Combine(ftOutDir, ftFilename);
-		Logger.Log(LogLevel.Info, "Reprimand/NativeLibLoader", "hii");
+		Logger.Log(LogLevel.Info, "Reprimand.Runtime/NativeLibLoader", "hii");
 		if (Directory.Exists(ftOutRoot) && !Directory.Exists(ftOutDir)) {
 			try {
-				Logger.Log(LogLevel.Info, "Reprimand/NativeLibLoader", "freetype native lib directory exists but doesn't seem to have the right version, cleaning");
+				Logger.Log(LogLevel.Info, "Reprimand.Runtime/NativeLibLoader", "freetype native lib directory exists but doesn't seem to have the right version, cleaning");
 				Directory.Delete(ftOutRoot, recursive: true);
 			} catch (Exception e) when (e is IOException or UnauthorizedAccessException) {
-				Logger.Log(LogLevel.Error, "Reprimand/NativeLibLoader", $"failed to clean freetype native lib cache directory: {e.GetType().Name}: {e.Message}");
+				Logger.Log(LogLevel.Error, "Reprimand.Runtime/NativeLibLoader", $"failed to clean freetype native lib cache directory: {e.GetType().Name}: {e.Message}");
 			}
 		}
 		Directory.CreateDirectory(ftOutDir);

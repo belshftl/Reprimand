@@ -111,7 +111,7 @@ public static class BackbufferAttachment {
 		if (overrideStack.Count != 0)
 			global::Celeste.Mod.Logger.Log(
 				global::Celeste.Mod.LogLevel.Warn,
-				"Reprimand/BackbufferAttachment",
+				"Reprimand.Runtime/BackbufferAttachment",
 				"unregistering hooks happened while backbuffer attachment overrides are active"
 			);
 		try {
