@@ -32,7 +32,7 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 			return;
 		if (
 			hasExplicitNonNullConfigArg(creat, known) ||
-			isOnLoadLifecycleMethod(ctx.ContainingSymbol, known) ||
+			runsUnderDetourIdBasedOnAttributes(ctx.ContainingSymbol, known) ||
 			isInsideDetourConfigScope(creat, known)
 		)
 			return;
@@ -51,16 +51,19 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 				break;
 		if (ns.Name is not "On" and not "IL")
 			return;
-		if (isOnLoadLifecycleMethod(ctx.ContainingSymbol, known) || isInsideDetourConfigScope(asg, known))
+		if (runsUnderDetourIdBasedOnAttributes(ctx.ContainingSymbol, known) || isInsideDetourConfigScope(asg, known))
 			return;
 		ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.HookWithoutDetourId, asg.Syntax.GetLocation()));
 	}
 
-	private static bool isOnLoadLifecycleMethod(ISymbol containingSymbol, KnownSymbols known) {
+	private static bool runsUnderDetourIdBasedOnAttributes(ISymbol containingSymbol, KnownSymbols known) {
 		if (containingSymbol is not IMethodSymbol method)
 			return false;
 		foreach (AttributeData attr in method.GetAttributes())
-			if (attr.AttributeClass.Implements(known.IOnLoadLifecycleAttribute))
+			if (
+				(known.RunsUnderDetourIdAttribute is not null && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, known.RunsUnderDetourIdAttribute)) ||
+				attr.AttributeClass.Implements(known.ReprimandRuntimeIOnLoadLifecycleAttribute)
+			)
 				return true;
 		return false;
 	}

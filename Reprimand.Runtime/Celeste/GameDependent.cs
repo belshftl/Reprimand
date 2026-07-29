@@ -3,9 +3,9 @@
 
 using System.Runtime.CompilerServices;
 using Monocle;
-using Reprimand.Lifecycle;
+using Reprimand.Runtime.Lifecycle;
 
-namespace Reprimand.Celeste;
+namespace Reprimand.Runtime.Celeste;
 
 internal interface IUntypedGameDependentT {
 	void OnLoadContent();
@@ -170,7 +170,7 @@ public sealed class GameDependent<T> : IUntypedGameDependentT where T : class {
 	/// </exception>
 	public GameDependent(Func<T> factory, Action<T>? teardown = null) {
 		ArgumentNullException.ThrowIfNull(factory);
-		ReprimandModule.ThrowIfInactive();
+		ReprimandRuntimeModule.ThrowIfInactive();
 		this.factory = factory;
 		this.teardown = teardown;
 		if (GameDependentTHooks.Add(this))

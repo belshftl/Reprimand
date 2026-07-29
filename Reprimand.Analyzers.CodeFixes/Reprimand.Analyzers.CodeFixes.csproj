@@ -8,11 +8,12 @@
 		<DevelopmentDependency>true</DevelopmentDependency>
 
 		<PackageId>Reprimand.Analyzers.CodeFixes</PackageId>
-		<Version>0.1.0-beta.2</Version>
+		<Version>0.1.0-beta.3</Version>
 		<Authors>belshftl</Authors>
 		<Description>codefixes from the analyzer for Celeste mods from the Reprimand project</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/belshftl/Reprimand</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
@@ -31,5 +32,6 @@
 
 	<ItemGroup>
 		<None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs/" />
+		<None Include="../README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
 </Project>

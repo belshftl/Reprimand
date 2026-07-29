@@ -71,10 +71,14 @@ jobs:
         run: >
           dotnet pack Reprimand.Mmhook/Reprimand.Mmhook.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/CelestePrefix" -o artifacts/nuget
 
-      - name: Create Reprimand.Runtime zip
+      - name: Pack Reprimand.Runtime
+        run: >
+          dotnet pack Reprimand.Runtime/Reprimand.Runtime.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/CelestePrefix" -o artifacts/nuget
+
+      - name: Create Reprimand.Runtime mod zip
         run: |
           mkdir RuntimePack
-          dotnet build Reprimand/Reprimand.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/CelestePrefix" -o RuntimePack
+          dotnet build Reprimand.Runtime/Reprimand.Runtime.csproj -c Release -p:CelestePrefix="${{ runner.temp }}/CelestePrefix" -o RuntimePack
           zip -r Reprimand.Runtime.zip everest.yaml RuntimePack
 
       - name: Add GitHub Packages source

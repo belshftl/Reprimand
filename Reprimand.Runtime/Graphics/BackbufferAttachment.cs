@@ -5,9 +5,9 @@ using System.Reflection;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
 using Reprimand.CodeAnalysis;
-using Reprimand.Lifecycle;
+using Reprimand.Runtime.Lifecycle;
 
-namespace Reprimand.Graphics;
+namespace Reprimand.Runtime.Graphics;
 
 /// <summary>
 /// Specifies how attaching the backbuffer treats its existing contents.
@@ -139,7 +139,7 @@ public static class BackbufferAttachment {
 	public static OverrideScope SetOverride(BackbufferAttachBehavior behavior) {
 		if (!(behavior is BackbufferAttachBehavior.Clear or BackbufferAttachBehavior.Load))
 			throw new ArgumentOutOfRangeException(nameof(behavior), behavior, "out of range BackbufferAttachBehavior enum value");
-		ReprimandModule.ThrowIfInactive();
+		ReprimandRuntimeModule.ThrowIfInactive();
 		ulong token = checked(++nextToken);
 		overrideStack.Add(new OverrideFrame(token, behavior));
 		return new OverrideScope(token, behavior);

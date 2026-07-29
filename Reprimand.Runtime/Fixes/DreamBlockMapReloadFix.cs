@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 
 using MonoMod.Cil;
-using Reprimand.Lifecycle;
 using Reprimand.MonoMod;
+using Reprimand.Runtime.Lifecycle;
 
-namespace Reprimand.Fixes;
+namespace Reprimand.Runtime.Fixes;
 
 internal static class DreamBlockMapReloadFix {
 	[OnLoad(UndoMethod = nameof(UnregisterHooks))]

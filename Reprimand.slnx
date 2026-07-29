@@ -2,4 +2,5 @@
 	<Project Path="Reprimand/Reprimand.csproj" />
 	<Project Path="Reprimand.Analyzers/Reprimand.Analyzers.csproj" />
 	<Project Path="Reprimand.Analyzers.CodeFixes/Reprimand.Analyzers.CodeFixes.csproj" />
+	<Project Path="Reprimand.Runtime/Reprimand.Runtime.csproj" />
 </Solution>

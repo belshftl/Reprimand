@@ -35,9 +35,10 @@ public sealed class SuggestedGlobalUsingAnalyzer : DiagnosticAnalyzer {
 		if (sym is not INamespaceSymbol ns)
 			return;
 		if (
-			SymbolEqualityComparer.Default.Equals(ns, known.ReprimandExtensionsNs) ||
-			SymbolEqualityComparer.Default.Equals(ns, known.ReprimandLifecycleNs) ||
-			SymbolEqualityComparer.Default.Equals(ns, known.ReprimandMonoModNs)
+			(known.ReprimandExtensionsNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandExtensionsNs)) ||
+			(known.ReprimandMonoModNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandMonoModNs)) ||
+			(known.ReprimandRuntimeExtensionsNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandRuntimeExtensionsNs)) ||
+			(known.ReprimandRuntimeLifecycleNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandRuntimeLifecycleNs))
 		)
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.SuggestedGlobalUsingNs, sx.GetLocation(), ns.ToDisplayString()));
 	}

@@ -23,7 +23,7 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static ctx => {
 				KnownSymbols known = new(ctx.Compilation);
-				if (known.SpriteBatch is null || known.GlobalSpriteBatch is null)
+				if (known.SpriteBatch is null)
 					return;
 
 				ctx.RegisterSyntaxNodeAction(c => analyzeVariableDeclaration(c, known), SyntaxKind.VariableDeclaration);
@@ -62,8 +62,6 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	}
 
 	private static void analyzeVariableDeclaration(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
-		if (isWithinGlobalSpriteBatch(ctx, known))
-			return;
 		var decl = (VariableDeclarationSyntax)ctx.Node;
 		ITypeSymbol? type = ctx.SemanticModel.GetTypeInfo(decl.Type, ctx.CancellationToken).Type;
 		if (type is null && decl.Variables.Count != 0) {
@@ -74,16 +72,12 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	}
 
 	private static void analyzeParameter(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
-		if (isWithinGlobalSpriteBatch(ctx, known))
-			return;
 		var param = (ParameterSyntax)ctx.Node;
 		IParameterSymbol? sym = ctx.SemanticModel.GetDeclaredSymbol(param, ctx.CancellationToken);
 		reportDeclaration(ctx, known, sym?.Type, param.Type?.GetLocation() ?? param.Identifier.GetLocation());
 	}
 
 	private static void analyzeTypedDeclaration(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
-		if (isWithinGlobalSpriteBatch(ctx, known))
-			return;
 		TypeSyntax? typeSyntax = ctx.Node switch {
 			PropertyDeclarationSyntax decl => decl.Type,
 			IndexerDeclarationSyntax decl => decl.Type,
@@ -106,8 +100,6 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	}
 
 	private static void analyzeForEachStatement(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
-		if (isWithinGlobalSpriteBatch(ctx, known))
-			return;
 		var stmt = (ForEachStatementSyntax)ctx.Node;
 		ILocalSymbol? sym = ctx.SemanticModel.GetDeclaredSymbol(stmt, ctx.CancellationToken);
 		ITypeSymbol? type = sym?.Type ?? ctx.SemanticModel.GetTypeInfo(stmt.Type, ctx.CancellationToken).Type;
@@ -115,7 +107,7 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	}
 
 	private static void analyzeDeclarationExpression(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
-		if (isWithinGlobalSpriteBatch(ctx, known) || known.SpriteBatch is null)
+		if (known.SpriteBatch is null)
 			return;
 		var decl = (DeclarationExpressionSyntax)ctx.Node;
 		ITypeSymbol? type = ctx.SemanticModel.GetTypeInfo(decl.Type, ctx.CancellationToken).Type;
@@ -131,8 +123,6 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	}
 
 	private static void analyzeSpriteBatchValue(OperationAnalysisContext ctx, KnownSymbols known) {
-		if (known.GlobalSpriteBatch is null || isWithinGlobalSpriteBatch(ctx.ContainingSymbol, known.GlobalSpriteBatch))
-			return;
 		IOperation op = ctx.Operation;
 		if (!op.Type.IsOrDerivesFrom(known.SpriteBatch))
 			return;
@@ -157,20 +147,6 @@ public sealed class GlobalSpriteBatchUsageAnalyzer : DiagnosticAnalyzer {
 	private static bool isWithinNameOf(IOperation op) {
 		for (IOperation? curr = op.Parent; curr is not null; curr = curr.Parent)
 			if (curr.Kind == OperationKind.NameOf)
-				return true;
-		return false;
-	}
-
-	private static bool isWithinGlobalSpriteBatch(SyntaxNodeAnalysisContext ctx, KnownSymbols known) {
-		if (known.GlobalSpriteBatch is null)
-			return false;
-		ISymbol? enclosing = ctx.SemanticModel.GetEnclosingSymbol(ctx.Node.SpanStart, ctx.CancellationToken);
-		return isWithinGlobalSpriteBatch(enclosing, known.GlobalSpriteBatch);
-	}
-
-	private static bool isWithinGlobalSpriteBatch(ISymbol? sym, INamedTypeSymbol globalSpriteBatchType) {
-		for (ISymbol? curr = sym; curr is not null; curr = curr.ContainingSymbol)
-			if (curr is INamedTypeSymbol type && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, globalSpriteBatchType))
 				return true;
 		return false;
 	}

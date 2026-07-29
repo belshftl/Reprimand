@@ -37,18 +37,20 @@ Once the library exits in-dev and switches to major version 1, semver will be us
 - Major releases will **not** be developmental landmarks or be special in any way; the major version may be bumped at any time. Attempts will be made to not bump it unless necessary once the early-dev dust settles, but no guarantees.
 - Existing APIs may be marked as deprecated without the major version changing, and then subsequently be removed in the next major release.
 
+The library is split into two packages: `Reprimand` is the core, usable by just pulling the NuGet package, while `Reprimand.Runtime` requires a runtime dependency mod to be present. Most of the functionality is within `Reprimand.Runtime`, and unless you're on a strict no-mod-dependencies policy, it is highly recommended to use the runtime package + declare an Everest dependency on the runtime mod.
+
 ---
 
 ## The TODO corner
 
 Current actively worked-on documentation:
-- displaying things
 - manual hooking, native hooks, method cloning, `DynamicMethodDefinition`
 
 Currently actively worked-on library features:
 - convenience events for just drawing things onscreen that fire e.g during `Level.Render`
 
 Planned documentation (roughly in highest-to-lowest priority order but subject to be reordered at any time):
+- displaying things
 - input stack behavior, where 2D axis input is normalized between circle/square, `Check`/`Released` interactions with buffering, buffering edge cases like changing `BufferTime` mid-buffer, whether a press+release within a single frame produces nothing or `Pressed`+`Released`, etc.
 - `EntityData` and entity IDs
 - `Level.Render()` structure, what matrices are applied where, and how/where to render HD elements

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 using Monocle;
-using Reprimand.Celeste;
+using Reprimand.Runtime.Celeste;
 
-namespace Reprimand.Extensions;
+namespace Reprimand.Runtime.Extensions;
 
 /// <summary>
 /// Provides utility/convenience extensions for <see cref="Entity"/>.

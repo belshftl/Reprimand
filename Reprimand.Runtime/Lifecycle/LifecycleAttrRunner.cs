@@ -5,7 +5,7 @@ using System.Reflection;
 using Celeste.Mod;
 using MonoMod.Utils;
 
-namespace Reprimand.Lifecycle;
+namespace Reprimand.Runtime.Lifecycle;
 
 /// <summary>
 /// A record of calls performed by <see cref="LifecycleAttrRunner"/> on load, used to undo them

@@ -10,9 +10,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.RuntimeDetour;
 using Reprimand.CodeAnalysis;
-using Reprimand.Lifecycle;
+using Reprimand.Runtime.Lifecycle;
 
-namespace Reprimand.Graphics;
+namespace Reprimand.Runtime.Graphics;
 
 /// <summary>
 /// Tracks and manages the game's global <see cref="Draw.SpriteBatch"/>.
@@ -906,7 +906,7 @@ public static class GlobalSpriteBatch {
 	}
 
 	private static void throwIfManagedOpUnavailable() {
-		ReprimandModule.ThrowIfInactive();
+		ReprimandRuntimeModule.ThrowIfInactive();
 		if (poisonReason is not null)
 			throw new InvalidOperationException("GlobalSpriteBatch is poisoned by an earlier internal/invariant error, sorry", poisonReason);
 		if (!transitioning)

@@ -29,7 +29,7 @@ internal static class Usage {
 		id: "RM0202",
 		title: "Field/property should not be accessed in a static constructor",
 		messageFormat:
-		"Field/property '{0}' should not be accessed in a static constructor or static field/property initializer as it may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
+		"Field/property '{0}' should not be accessed in a static constructor or static field/property initializer as it may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Runtime.Celeste or custom lazy init with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
@@ -39,7 +39,7 @@ internal static class Usage {
 		id: "RM0203",
 		title: "Static method should not be called in a static constructor",
 		messageFormat:
-		"Static method '{0}' should not be called in a static constructor or static field/property initializer, as due to a Celeste code quirk, state it relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
+		"Static method '{0}' should not be called in a static constructor or static field/property initializer, as due to a Celeste code quirk, state it relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Runtime.Celeste or custom lazy init with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
@@ -49,7 +49,7 @@ internal static class Usage {
 		id: "RM0204",
 		title: "Object should not be instantiated in a static constructor",
 		messageFormat:
-		"Objects of type '{0}' should not be instantiated in a static constructor or static field/property initializer, as due to a Celeste code quirk, state its constructor relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Celeste or custom lazy init with `??=`",
+		"Objects of type '{0}' should not be instantiated in a static constructor or static field/property initializer, as due to a Celeste code quirk, state its constructor relies on may still be null/uninitialized at this point; for an alternative, consider GameDependent<T> from Reprimand.Runtime.Celeste or custom lazy init with `??=`",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
@@ -119,7 +119,7 @@ internal static class Usage {
 		id: "RM0211",
 		title: "Declare hooks under detour IDs",
 		messageFormat:
-		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods. Reprimand's built-in lifecycle attributes such as [OnLoad] do this for you.",
+		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods. Reprimand.Runtime's built-in lifecycle attributes such as [OnLoad] do this for you; if you're handling it manually, use [RunsUnderDetourId] from Reprimand.CodeAnalysis.",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true

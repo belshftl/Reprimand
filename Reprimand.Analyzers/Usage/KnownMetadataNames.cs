@@ -9,7 +9,8 @@ internal static class KnownMetadataNames {
 	public const string IEnumerator = "System.Collections.IEnumerator";
 
 	public const string DontUseInStaticCtorAttribute = "Reprimand.CodeAnalysis.DontUseInStaticCtorAttribute";
-	public const string IOnLoadLifecycleAttribute = "Reprimand.Lifecycle.IOnLoadLifecycleAttribute";
+	public const string RunsUnderDetourIdAttribute = "Reprimand.CodeAnalysis.RunsUnderDetourIdAttribute";
+	public const string ReprimandRuntimeIOnLoadLifecycleAttribute = "Reprimand.Runtime.Lifecycle.IOnLoadLifecycleAttribute";
 
 	public const string Hook = "MonoMod.RuntimeDetour.Hook";
 	public const string ILHook = "MonoMod.RuntimeDetour.ILHook";

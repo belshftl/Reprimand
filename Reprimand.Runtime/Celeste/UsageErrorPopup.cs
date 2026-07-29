@@ -13,11 +13,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.Cil;
-using Reprimand.Graphics;
-using Reprimand.Lifecycle;
 using Reprimand.MonoMod;
+using Reprimand.Runtime.Graphics;
+using Reprimand.Runtime.Lifecycle;
 
-namespace Reprimand.Celeste;
+namespace Reprimand.Runtime.Celeste;
 
 internal static class UsageErrorPopup {
 	public const string FontPath = "fonts/JetBrainsMonoNL-Bold.ttf";

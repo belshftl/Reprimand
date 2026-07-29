@@ -6,10 +6,12 @@
 		<Nullable>enable</Nullable>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-		<PackageId>Reprimand</PackageId>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+		<PackageId>Reprimand.Runtime</PackageId>
 		<Version>0.1.0-beta.3</Version>
 		<Authors>belshftl</Authors>
-		<Description>a utility library for Celeste mods (the portion that doesn't require a runtime dependency mod)</Description>
+		<Description>a utility library for Celeste mods (the portion that requires a runtime dependency mod, i.e. most of the library)</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -21,11 +23,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="Reprimand.Runtime" />
+		<ProjectReference Include="../Reprimand/Reprimand.csproj" />
+
+		<!-- reference this here so it gets pulled into the build output -->
+		<Reference Include="../Reprimand.Mmhook/MMHOOK_Celeste.RmExtras.dll" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4" ExcludeAssets="runtime" />
+		<PackageReference Include="FontStashSharp.Base" Version="1.2.3" />
+		<PackageReference Include="FontStashSharp.Rasterizers.StbTrueTypeSharp" Version="1.2.3" />
+		<PackageReference Include="FontStashSharp.Rasterizers.FreeType" Version="1.2.3" />
+		<PackageReference Include="AtBelshftl.FreeTypeSharp.NativeAssets.LinuxArm64" Version="1.0.0" />
+		<Reference Include="$(VendorPath)/FontStashSharp.FNA.dll" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -36,7 +45,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="buildTransitive/$(PackageId).targets" Pack="true" PackagePath="buildTransitive/$(PackageId).targets" />
 		<None Include="../README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources/Fonts/JetBrainsMonoNL-Bold.ttf">
+			<LogicalName>fonts/JetBrainsMonoNL-Bold.ttf</LogicalName>
+		</EmbeddedResource>
 	</ItemGroup>
 </Project>

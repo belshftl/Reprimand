@@ -4,7 +4,7 @@
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Reprimand.Celeste;
+namespace Reprimand.Runtime.Celeste;
 
 internal readonly struct EntityUsageErrorInfo {
 	public required Entity Entity { get; init; }

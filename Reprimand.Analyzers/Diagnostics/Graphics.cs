@@ -11,7 +11,7 @@ internal static class Graphics {
 		id: "RM0100",
 		title: "SpriteBatch ownership is restricted",
 		messageFormat:
-		"Celeste renders through a singular global SpriteBatch, which you can use through Reprimand.Graphics.GlobalSpriteBatch; SpriteBatch instances must not be stored, passed, returned, or owned elsewhere",
+		"Celeste renders through a singular global SpriteBatch, which you can use through Draw.SpriteBatch; SpriteBatch instances must not be stored, passed, returned, or owned elsewhere",
 		category: "Graphics",
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true
@@ -20,7 +20,7 @@ internal static class Graphics {
 	public static readonly DiagnosticDescriptor NonGlobalSpriteBatchUsage = new(
 		id: "RM0101",
 		title: "Use the global SpriteBatch",
-		messageFormat: "Celeste renders through a singular global SpriteBatch, which you can use through Reprimand.Graphics.GlobalSpriteBatch; use that instead of this value",
+		messageFormat: "Celeste renders through a singular global SpriteBatch, which you can use through Draw.SpriteBatch; use that instead of this value",
 		category: "Graphics",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
