@@ -12,7 +12,7 @@ under a combined project name.
 ---
 
 ## Current library features
-- a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 41 unique diagnostics and counting
+- a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 42 unique diagnostics and counting
 - a way to report entity/trigger usage errors without a crash from a thrown exception by displaying an in-game error popup for the mapper
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
 - more HookGen-like events for `orig_` methods, state machine targets, and some hand-picked lambdas; instead of having to manually find the state machine target and create a hook object, you can simply do `RM.IL.Celeste.Player.DashCoroutine_StateMachine += il_Player_DashCoroutine;`
@@ -20,6 +20,7 @@ under a combined project name.
 - sourcegen'd convenience wrapper for `Logger` that removes the need to manually specify a tag string every time you wanna log something
 - API to be able to bind the backbuffer without clearing it, even if the `RenderTargetUsage` isn't set to `PreserveContents`
 - a replacement for `ILCursor.Goto{Next,Prev}` with much better match-fail exceptions
+- an entity tag to update during freezeframes, since `Tags.FrozenUpdate` doesn't actually do that
 
 ## Current documentation
 - none yet, sorry

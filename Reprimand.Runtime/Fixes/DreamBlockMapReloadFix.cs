@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 using MonoMod.Cil;
+using Reprimand.Lifecycle;
 using Reprimand.MonoMod;
-using Reprimand.Runtime.Lifecycle;
 
 namespace Reprimand.Runtime.Fixes;
 

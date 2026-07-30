@@ -3,7 +3,7 @@
 
 using Celeste.Mod;
 
-namespace Reprimand.Runtime.Lifecycle;
+namespace Reprimand.Lifecycle;
 
 internal interface IOnLoadLifecycleAttribute {
 	int Priority { get; }

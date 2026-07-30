@@ -13,7 +13,11 @@ internal sealed class KnownSymbols {
 
 	public INamedTypeSymbol? DontUseInStaticCtorAttribute { get; }
 	public INamedTypeSymbol? RunsUnderDetourIdAttribute { get; }
-	public INamedTypeSymbol? ReprimandRuntimeIOnLoadLifecycleAttribute { get; }
+	public INamedTypeSymbol? IOnLoadLifecycleAttribute { get; }
+
+	public INamedTypeSymbol? Tags { get; }
+	public IFieldSymbol? TagsFrozenUpdateField { get; }
+	public INamedTypeSymbol? RmTags { get; }
 
 	public INamedTypeSymbol? Hook { get; }
 	public INamedTypeSymbol? ILHook { get; }
@@ -70,7 +74,15 @@ internal sealed class KnownSymbols {
 
 		DontUseInStaticCtorAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.DontUseInStaticCtorAttribute);
 		RunsUnderDetourIdAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.RunsUnderDetourIdAttribute);
-		ReprimandRuntimeIOnLoadLifecycleAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.ReprimandRuntimeIOnLoadLifecycleAttribute);
+		IOnLoadLifecycleAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.IOnLoadLifecycleAttribute);
+
+		Tags = comp.GetTypeByMetadataName(KnownMetadataNames.Tags);
+		TagsFrozenUpdateField = Tags
+			?.GetMembers()
+			.OfType<IFieldSymbol>()
+			.FirstOrDefault(static f => f.Name == KnownMetadataNames.TagsFrozenUpdateField)
+			?.OriginalDefinition;
+		RmTags = comp.GetTypeByMetadataName(KnownMetadataNames.RmTags);
 
 		Hook = comp.GetTypeByMetadataName(KnownMetadataNames.Hook);
 		ILHook = comp.GetTypeByMetadataName(KnownMetadataNames.ILHook);

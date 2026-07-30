@@ -62,7 +62,7 @@ public sealed class HookDetourIdAnalyzer : DiagnosticAnalyzer {
 		foreach (AttributeData attr in method.GetAttributes())
 			if (
 				(known.RunsUnderDetourIdAttribute is not null && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, known.RunsUnderDetourIdAttribute)) ||
-				attr.AttributeClass.Implements(known.ReprimandRuntimeIOnLoadLifecycleAttribute)
+				attr.AttributeClass.Implements(known.IOnLoadLifecycleAttribute)
 			)
 				return true;
 		return false;

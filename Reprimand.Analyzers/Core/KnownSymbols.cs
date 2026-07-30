@@ -7,10 +7,10 @@ namespace Reprimand.Analyzers.Core;
 
 internal sealed class KnownSymbols(Compilation comp) {
 	public INamespaceSymbol? ReprimandExtensionsNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandExtensionsNs);
+	public INamespaceSymbol? ReprimandLifecycleNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandLifecycleNs);
 	public INamespaceSymbol? ReprimandMonoModNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandMonoModNs);
 
 	public INamespaceSymbol? ReprimandRuntimeExtensionsNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandRuntimeExtensionsNs);
-	public INamespaceSymbol? ReprimandRuntimeLifecycleNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandRuntimeLifecycleNs);
 
 	public INamedTypeSymbol? OnLoadAttribute { get; } = comp.GetTypeByMetadataName(KnownMetadataNames.OnLoadAttribute);
 	public INamedTypeSymbol? OnLoadOneshotAttribute { get; } = comp.GetTypeByMetadataName(KnownMetadataNames.OnLoadOneshotAttribute);

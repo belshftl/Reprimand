@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 using Celeste.Mod;
-using Reprimand.Runtime.Lifecycle;
+using Reprimand.Lifecycle;
 
 namespace Reprimand.Runtime;
 

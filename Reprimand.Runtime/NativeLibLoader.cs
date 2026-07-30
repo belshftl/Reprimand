@@ -7,7 +7,7 @@ using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Celeste.Mod;
-using Reprimand.Runtime.Lifecycle;
+using Reprimand.Lifecycle;
 
 namespace Reprimand.Runtime;
 

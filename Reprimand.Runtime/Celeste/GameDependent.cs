@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Monocle;
-using Reprimand.Runtime.Lifecycle;
+using Reprimand.Lifecycle;
 
 namespace Reprimand.Runtime.Celeste;
 

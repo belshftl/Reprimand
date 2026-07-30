@@ -36,9 +36,9 @@ public sealed class SuggestedGlobalUsingAnalyzer : DiagnosticAnalyzer {
 			return;
 		if (
 			(known.ReprimandExtensionsNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandExtensionsNs)) ||
+			(known.ReprimandLifecycleNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandLifecycleNs)) ||
 			(known.ReprimandMonoModNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandMonoModNs)) ||
-			(known.ReprimandRuntimeExtensionsNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandRuntimeExtensionsNs)) ||
-			(known.ReprimandRuntimeLifecycleNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandRuntimeLifecycleNs))
+			(known.ReprimandRuntimeExtensionsNs is not null && SymbolEqualityComparer.Default.Equals(ns, known.ReprimandRuntimeExtensionsNs))
 		)
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Core.SuggestedGlobalUsingNs, sx.GetLocation(), ns.ToDisplayString()));
 	}

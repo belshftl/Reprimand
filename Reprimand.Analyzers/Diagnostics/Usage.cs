@@ -119,7 +119,7 @@ internal static class Usage {
 		id: "RM0211",
 		title: "Declare hooks under detour IDs",
 		messageFormat:
-		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods. Reprimand.Runtime's built-in lifecycle attributes such as [OnLoad] do this for you; if you're handling it manually, use [RunsUnderDetourId] from Reprimand.CodeAnalysis.",
+		"Hooks should be declared under a detour ID; ID-less hooks are much harder if not impossible to order against from other mods. Reprimand's built-in lifecycle attributes such as [OnLoad] do this for you; if you're handling it manually, use [RunsUnderDetourId] from Reprimand.CodeAnalysis.",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
@@ -238,6 +238,15 @@ internal static class Usage {
 		messageFormat: "Type '{0}' must be the same as, or derive from, [TrackedAs] type '{1}'",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor DontUseFrozenUpdateTag = new(
+		id: "RM0224",
+		title: "Don't use Tags.FrozenUpdate",
+		messageFormat: "Tags.FrozenUpdate probably doesn't do what you think it does; use RmTags.FreezeframeUpdate if you want your entity to update during freezeframes, or the alias RmTags.LevelFrozenUpdate if you genuinely want the vanilla FrozenUpdate (both from Reprimand.Runtime.Celeste)",
+		category: "Usage",
+		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
 #pragma warning restore RS2008 // enable analyzer release tracking

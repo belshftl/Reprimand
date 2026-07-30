@@ -9,9 +9,9 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Reprimand.Analyzers.Usage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class GfxAnalyzer : DiagnosticAnalyzer {
+public sealed class FrozenUpdateTagAnalyzer : DiagnosticAnalyzer {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-		Diagnostics.Usage.IllegalFieldWrite
+		Diagnostics.Usage.DontUseFrozenUpdateTag
 	);
 
 	public override void Initialize(AnalysisContext context) {
@@ -19,7 +19,7 @@ public sealed class GfxAnalyzer : DiagnosticAnalyzer {
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static ctx => {
 				KnownSymbols known = new(ctx.Compilation);
-				if (known.Gfx is null)
+				if (known.RmTags is null) // don't report the diagnostic if the suggested fix isn't even available
 					return;
 				ctx.RegisterOperationAction(c => analyzeFieldReference(c, known), OperationKind.FieldReference);
 			}
@@ -28,17 +28,8 @@ public sealed class GfxAnalyzer : DiagnosticAnalyzer {
 
 	private static void analyzeFieldReference(OperationAnalysisContext ctx, KnownSymbols known) {
 		var fr = (IFieldReferenceOperation)ctx.Operation;
-		if (
-			!(
-				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition, known.EngineEffectiveTimeRateField) ||
-				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition.ContainingType, known.Tags) ||
-				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition.ContainingType, known.Draw) ||
-				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition.ContainingType, known.Gfx) ||
-				SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition.ContainingType, known.TrackedAsAttribute)
-			)
-		)
+		if (!SymbolEqualityComparer.Default.Equals(fr.Field.OriginalDefinition, known.TagsFrozenUpdateField))
 			return;
-		if (fr.IsWrite(out Location? loc))
-			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.IllegalFieldWrite, loc, fr.Field.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+		ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseFrozenUpdateTag, fr.Syntax.GetLocation()));
 	}
 }

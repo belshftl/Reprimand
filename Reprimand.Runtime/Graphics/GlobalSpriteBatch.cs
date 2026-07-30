@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.RuntimeDetour;
 using Reprimand.CodeAnalysis;
-using Reprimand.Runtime.Lifecycle;
+using Reprimand.Lifecycle;
 
 namespace Reprimand.Runtime.Graphics;
 

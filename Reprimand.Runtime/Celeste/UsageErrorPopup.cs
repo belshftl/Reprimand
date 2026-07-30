@@ -13,9 +13,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.Cil;
+using Reprimand.Lifecycle;
 using Reprimand.MonoMod;
 using Reprimand.Runtime.Graphics;
-using Reprimand.Runtime.Lifecycle;
 
 namespace Reprimand.Runtime.Celeste;
 
