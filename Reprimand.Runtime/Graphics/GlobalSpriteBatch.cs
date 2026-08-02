@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 belshftl
 // SPDX-License-Identifier: MIT
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -10,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.RuntimeDetour;
 using Reprimand.CodeAnalysis;
+using Reprimand.CodeAnalysis.Internal;
 using Reprimand.Lifecycle;
 
 namespace Reprimand.Runtime.Graphics;
@@ -207,19 +209,20 @@ public static class GlobalSpriteBatch {
 	/// A temporary suspension of an active spritebatch.
 	/// </summary>
 	/// <remarks>
-	/// A <see langword="default"/> value is a no-op. Scopes must be disposed in reverse creation order.
+	/// Scopes must be disposed in reverse creation order. Copies of this value do not share
+	/// disposed state; disposing a copy throws.
 	/// </remarks>
 	public readonly ref struct Suspension {
-		private readonly ScopeToken token;
+		internal readonly ScopeToken Token;
 		internal Suspension(ScopeToken token, BatchParameters? suspendedParameters) {
-			this.token = token;
+			Token = token;
 			SuspendedParameters = suspendedParameters;
 		}
 
 		/// <summary>
 		/// Whether this scope actually suspended a batch.
 		/// </summary>
-		public bool WasActive => token.Generation != 0;
+		public bool WasActive => Token.Generation != 0;
 
 		/// <summary>
 		/// The parameters of the suspended batch, or <see langword="null"/> for a no-op suspension.
@@ -233,7 +236,31 @@ public static class GlobalSpriteBatch {
 		/// Thrown if the scope is not the innermost active scope, has already been disposed, or
 		/// the <see cref="GlobalSpriteBatch"/> class is poisoned.
 		/// </exception>
-		public void Dispose() => disposeScope(token, ScopeKind.Suspension);
+		public void Dispose() => disposeScope(Token, ScopeKind.Suspension);
+	}
+
+	/// <summary>
+	/// A cookie representing a temporary suspension of an active spritebatch, meant to be used from
+	/// emitted IL rather than from C#.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DontUseFromCSharp]
+	public readonly struct ILSuspensionCookie {
+		internal readonly ScopeToken Token;
+		internal ILSuspensionCookie(ScopeToken token, BatchParameters? suspendedParameters) {
+			Token = token;
+			SuspendedParameters = suspendedParameters;
+		}
+
+		/// <summary>
+		/// Whether this scope actually suspended a batch.
+		/// </summary>
+		public bool WasActive => Token.Generation != 0;
+
+		/// <summary>
+		/// The parameters of the suspended batch, or <see langword="null"/> for a no-op suspension.
+		/// </summary>
+		public BatchParameters? SuspendedParameters { get; }
 	}
 
 	/// <summary>
@@ -268,7 +295,7 @@ public static class GlobalSpriteBatch {
 			beginHook = new Hook(
 				typeof(SpriteBatch).GetMethod(
 					nameof(SpriteBatch.Begin),
-					BindingFlags.Public | BindingFlags.Instance,
+					BindingFlags.Instance | BindingFlags.Public,
 					binder: null,
 					types: [
 						typeof(SpriteSortMode),
@@ -286,7 +313,7 @@ public static class GlobalSpriteBatch {
 			endHook = new Hook(
 				typeof(SpriteBatch).GetMethod(
 					nameof(SpriteBatch.End),
-					BindingFlags.Public | BindingFlags.Instance,
+					BindingFlags.Instance | BindingFlags.Public,
 					binder: null,
 					types: Type.EmptyTypes,
 					modifiers: null
@@ -617,6 +644,55 @@ public static class GlobalSpriteBatch {
 		throwIfManagedOpUnavailable();
 		return currParams is {} @params ? suspendCore(@params) : default;
 	}
+
+	/// <summary>
+	/// Suspends the active spritebatch by ending it and returning a cookie which can be passed to
+	/// <see cref="ExitSuspensionForIL(ILSuspensionCookie)"/> to restart it. Intended to be used from
+	/// emitted IL rather than from C#.
+	/// </summary>
+	/// <returns>
+	/// A cookie which can be used to restore the suspended batch.
+	/// </returns>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown if no spritebatch is active, a transition is already in progress, or the class is poisoned.
+	/// </exception>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DontUseFromCSharp]
+	public static ILSuspensionCookie EnterSuspensionForIL() {
+		Suspension s = Suspend();
+		return new ILSuspensionCookie(s.Token, s.SuspendedParameters);
+	}
+
+	/// <summary>
+	/// Suspends the active spritebatch by ending it and returning a cookie which can be passed to
+	/// <see cref="ExitSuspensionForIL(ILSuspensionCookie)"/> to restart it. Intended to be used from
+	/// emitted IL rather than from C#.
+	/// </summary>
+	/// <returns>
+	/// A cookie which can be used to restore the suspended batch, or a no-op cookie if no batch is active.
+	/// </returns>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown if a transition is already in progress or the class is poisoned.
+	/// </exception>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DontUseFromCSharp]
+	public static ILSuspensionCookie EnterSuspensionIfActiveForIL() {
+		Suspension s = SuspendIfActive();
+		return new ILSuspensionCookie(s.Token, s.SuspendedParameters);
+	}
+
+	/// <summary>
+	/// Ends a spritebatch suspension from an <see cref="ILSuspensionCookie"/>. Intended to be used from
+	/// emitted IL rather than from C#.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown if the scope is not the innermost active scope, has already been ended, or
+	/// the class is poisoned.
+	/// </exception>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DontUseFromCSharp]
+	public static void ExitSuspensionForIL(ILSuspensionCookie cookie) =>
+		disposeScope(cookie.Token, ScopeKind.Suspension);
 
 	private static Suspension suspendCore(scoped in BatchParameters @params) {
 		SpriteBatch batch = getTrackedBatch();

@@ -12,6 +12,8 @@ internal sealed class KnownSymbols(Compilation comp) {
 
 	public INamespaceSymbol? ReprimandRuntimeExtensionsNs { get; } = getNamespace(comp, KnownMetadataNames.ReprimandRuntimeExtensionsNs);
 
+	public INamedTypeSymbol? DontUseFromCSharpAttribute { get; } = comp.GetTypeByMetadataName(KnownMetadataNames.DontUseFromCSharpAttribute);
+
 	public INamedTypeSymbol? OnLoadAttribute { get; } = comp.GetTypeByMetadataName(KnownMetadataNames.OnLoadAttribute);
 	public INamedTypeSymbol? OnLoadOneshotAttribute { get; } = comp.GetTypeByMetadataName(KnownMetadataNames.OnLoadOneshotAttribute);
 	public INamedTypeSymbol? OnLoadIfOptionalDepAttribute { get; } = comp.GetTypeByMetadataName(KnownMetadataNames.OnLoadIfOptionalDepAttribute);

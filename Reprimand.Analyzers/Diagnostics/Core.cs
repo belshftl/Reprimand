@@ -78,5 +78,14 @@ internal static class Core {
 		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
 	);
+
+	public static readonly DiagnosticDescriptor DontUseFromCSharp = new(
+		id: "RM0009",
+		title: "Member must not be used from C# code",
+		messageFormat: "'{0}' is for use by emitted IL and must not be used from C# code",
+		category: "Core",
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true
+	);
 #pragma warning restore RS2008 // enable analyzer release tracking
 }

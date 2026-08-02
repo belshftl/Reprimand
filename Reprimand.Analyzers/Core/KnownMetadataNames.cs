@@ -10,6 +10,8 @@ internal static class KnownMetadataNames {
 
 	public const string ReprimandRuntimeExtensionsNs = "Reprimand.Runtime.Extensions";
 
+	public const string DontUseFromCSharpAttribute = "Reprimand.CodeAnalysis.Internal.DontUseFromCSharpAttribute";
+
 	public const string OnLoadAttribute = "Reprimand.Lifecycle.OnLoadAttribute";
 	public const string OnLoadOneshotAttribute = "Reprimand.Lifecycle.OnLoadOneshotAttribute";
 	public const string OnLoadIfOptionalDepAttribute = "Reprimand.Lifecycle.OnLoadIfOptionalDepAttribute";

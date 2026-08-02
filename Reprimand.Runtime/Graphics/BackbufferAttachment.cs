@@ -1,10 +1,12 @@
 // SPDX-FileCopyrightText: 2026 belshftl
 // SPDX-License-Identifier: MIT
 
+using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
 using Reprimand.CodeAnalysis;
+using Reprimand.CodeAnalysis.Internal;
 using Reprimand.Lifecycle;
 
 namespace Reprimand.Runtime.Graphics;
@@ -47,9 +49,9 @@ public static class BackbufferAttachment {
 	/// disposed state; disposing a copy throws.
 	/// </remarks>
 	public readonly ref struct OverrideScope {
-		private readonly ulong token;
+		internal readonly ulong Token;
 		internal OverrideScope(ulong token, BackbufferAttachBehavior behavior) {
-			this.token = token;
+			Token = token;
 			Behavior = behavior;
 		}
 
@@ -64,7 +66,26 @@ public static class BackbufferAttachment {
 		/// <exception cref="InvalidOperationException">
 		/// Thrown if the scope is not the innermost active scope or has already been disposed.
 		/// </exception>
-		public void Dispose() => disposeOverride(token);
+		public void Dispose() => disposeOverride(Token);
+	}
+
+	/// <summary>
+	/// A cookie representing a scoped backbuffer attachment behavior override, meant to be used from
+	/// emitted IL rather than from C#.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DontUseFromCSharp]
+	public readonly struct ILOverrideCookie {
+		internal readonly ulong Token;
+		internal ILOverrideCookie(ulong token, BackbufferAttachBehavior behavior) {
+			Token = token;
+			Behavior = behavior;
+		}
+
+		/// <summary>
+		/// The attachment behavior selected by this scope.
+		/// </summary>
+		public BackbufferAttachBehavior Behavior { get; }
 	}
 
 	private readonly struct OverrideFrame(ulong token, BackbufferAttachBehavior behavior) {
@@ -96,7 +117,7 @@ public static class BackbufferAttachment {
 		setRenderTargetsHook = new Hook(
 			typeof(GraphicsDevice).GetMethod(
 				nameof(GraphicsDevice.SetRenderTargets),
-				BindingFlags.Public | BindingFlags.Instance,
+				BindingFlags.Instance | BindingFlags.Public,
 				null,
 				[
 					typeof(RenderTargetBinding[]),
@@ -162,6 +183,37 @@ public static class BackbufferAttachment {
 	/// </returns>
 	[DontUseInStaticCtor]
 	public static OverrideScope SetClear() => SetOverride(BackbufferAttachBehavior.Clear);
+
+	/// <summary>
+	/// Overrides the behavior of backbuffer attachments performed until the returned cookie is
+	/// ended with <see cref="ExitOverrideForIL(ILOverrideCookie)"/>. Intended to be used from
+	/// emitted IL rather than from C#.
+	/// </summary>
+	/// <param name="behavior">
+	/// The new attachment behavior.
+	/// </param>
+	/// <returns>
+	/// A cookie which can be used to restore the previous override.
+	/// </returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown if <paramref name="behavior"/> is not a valid <see cref="BackbufferAttachBehavior"/>
+	/// enum value.
+	/// </exception>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DontUseFromCSharp]
+	public static ILOverrideCookie EnterOverrideForIL(BackbufferAttachBehavior behavior) {
+		OverrideScope s = SetOverride(behavior);
+		return new ILOverrideCookie(s.Token, s.Behavior);
+	}
+
+	/// <summary>
+	/// Ends a backbuffer attachment behaivor override from an <see cref="ILOverrideCookie"/>.
+	/// Intended to be used from emitted IL rather than from C#.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DontUseFromCSharp]
+	public static void ExitOverrideForIL(ILOverrideCookie cookie) =>
+		disposeOverride(cookie.Token);
 
 	private static void on_GraphicsDevice_SetRenderTargets(orig_GraphicsDevice_SetRenderTargets orig, GraphicsDevice self, RenderTargetBinding[]? renderTargets) {
 		GraphicsDevice? dev = Monocle.Engine.Graphics.GraphicsDevice;
