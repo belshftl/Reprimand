@@ -1,5 +1,5 @@
 - Name: Reprimand.Runtime
-  Version: 0.1.0-beta.3
+  Version: 0.1.0-beta.4
   DLL: RuntimePack/Reprimand.Runtime.dll
   Dependencies:
     - Name: Everest

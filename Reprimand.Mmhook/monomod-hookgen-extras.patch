@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2026 belshftl
 # SPDX-License-Identifier: MIT
 # ------------------------------------------------------------------------------
-# src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs | 405 ++++++++++++++-------
-# src/MonoMod.RuntimeDetour.HookGen/Program.cs       |   5 +
-# 2 files changed, 277 insertions(+), 133 deletions(-)
+# src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs | 412 ++++++++++++++-------
+# src/MonoMod.RuntimeDetour.HookGen/Program.cs       |  16 +
+# 2 files changed, 293 insertions(+), 135 deletions(-)
 # ------------------------------------------------------------------------------
 diff --git a/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs b/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs
-index 925117d..08aaa57 100644
+index 925117d..525d00d 100644
 --- a/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs
 +++ b/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs
 @@ -36,6 +36,31 @@ namespace MonoMod.RuntimeDetour.HookGen
@@ -18,7 +18,7 @@ index 925117d..08aaa57 100644
 +                "Celeste.Level",
 +                "Celeste.Level/<>c__DisplayClass149_0",
 +                "<Pause>b__3",
-+                "OnESC_Lambda"
++                "Pause_OnESC_Lambda"
 +            ),
 +        };
 +
@@ -495,11 +495,40 @@ index 925117d..08aaa57 100644
          }
  
          public TypeDefinition GenerateDelegateFor(MethodDefinition method)
+@@ -554,8 +693,11 @@ namespace MonoMod.RuntimeDetour.HookGen
+             type = typeRef?.SafeResolve();
+ 
+             Try:
+-            if (type == null) // Unresolvable - probably private anyway.
+-                return OutputModule.TypeSystem.Object;
++            if (type == null)
++                throw new InvalidOperationException(
++                    "Could not resolve hook signature type " +
++                    typeRef.FullName + " from " + typeRef.Scope
++                );
+ 
+             // Generic instance types are special. Try to match them exactly or baseify them.
+             if (typeRef is GenericInstanceType typeGen && !HasPublicArgs(typeGen))
 diff --git a/src/MonoMod.RuntimeDetour.HookGen/Program.cs b/src/MonoMod.RuntimeDetour.HookGen/Program.cs
-index ee523c3..2519bc1 100644
+index ee523c3..06bd2e7 100644
 --- a/src/MonoMod.RuntimeDetour.HookGen/Program.cs
 +++ b/src/MonoMod.RuntimeDetour.HookGen/Program.cs
-@@ -48,6 +48,11 @@ namespace MonoMod.RuntimeDetour.HookGen
+@@ -1,5 +1,6 @@
+ ﻿using Mono.Cecil;
+ using System;
++using System.Collections.Generic;
+ using System.IO;
+ 
+ namespace MonoMod.RuntimeDetour.HookGen
+@@ -23,6 +24,7 @@ namespace MonoMod.RuntimeDetour.HookGen
+             string pathIn;
+             string pathOut;
+ 
++            var dependencyDirs = new List<string>();
+             var pathInI = 0;
+ 
+             for (var i = 0; i < args.Length; i++)
+@@ -48,6 +50,17 @@ namespace MonoMod.RuntimeDetour.HookGen
                  {
                      Environment.SetEnvironmentVariable("MONOMOD_HOOKGEN_PRIVATE", "1");
  
@@ -508,6 +537,22 @@ index ee523c3..2519bc1 100644
 +                {
 +                    Environment.SetEnvironmentVariable("MONOMOD_HOOKGEN_EXTRAS", "1");
 +
++                }
++                else if (args[i] == "--dependency-dir" && i + 2 < args.Length)
++                {
++                    i++;
++                    dependencyDirs.Add(Path.GetFullPath(args[i]));
++
                  }
                  else
                  {
+@@ -81,6 +94,9 @@ namespace MonoMod.RuntimeDetour.HookGen
+                 ReadingMode = ReadingMode.Deferred
+             })
+             {
++                foreach (var dir in dependencyDirs)
++                    mm.DependencyDirs.Add(dir);
++
+                 mm.Read();
+ 
+                 mm.MapDependencies();

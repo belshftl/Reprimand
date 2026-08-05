@@ -9,7 +9,7 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
 		<PackageId>Reprimand.Runtime</PackageId>
-		<Version>0.1.0-beta.3</Version>
+		<Version>0.1.0-beta.4</Version>
 		<Authors>belshftl</Authors>
 		<Description>a utility library for Celeste mods (the portion that requires a runtime dependency mod, i.e. most of the library)</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
