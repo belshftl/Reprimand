@@ -7,7 +7,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<PackageId>Reprimand</PackageId>
-		<Version>0.1.0-beta.5</Version>
+		<Version>0.1.0-beta.6</Version>
 		<Authors>belshftl</Authors>
 		<Description>a utility library for Celeste mods (the portion that doesn't require a runtime dependency mod)</Description>
 		<Copyright>Copyright (c) 2026 belshftl</Copyright>
