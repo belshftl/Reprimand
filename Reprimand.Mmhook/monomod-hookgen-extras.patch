@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2026 belshftl
 # SPDX-License-Identifier: MIT
 # ------------------------------------------------------------------------------
-# src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs | 412 ++++++++++++++-------
+# src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs | 415 ++++++++++++++-------
 # src/MonoMod.RuntimeDetour.HookGen/Program.cs       |  16 +
-# 2 files changed, 293 insertions(+), 135 deletions(-)
+# 2 files changed, 295 insertions(+), 136 deletions(-)
 # ------------------------------------------------------------------------------
 diff --git a/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs b/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs
-index 925117d..525d00d 100644
+index 925117d..903b95c 100644
 --- a/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs
 +++ b/src/MonoMod.RuntimeDetour.HookGen/HookGenerator.cs
 @@ -36,6 +36,31 @@ namespace MonoMod.RuntimeDetour.HookGen
@@ -69,7 +69,7 @@ index 925117d..525d00d 100644
 +            {
 +                foreach (var method in type.Methods)
 +                {
-+                    if (method.Name.StartsWith("orig_", StringComparison.Ordinal))
++                    if (method.Name.StartsWith("orig_", StringComparison.Ordinal) || method.IsGetter || method.IsSetter)
 +                        add |= GenerateFor(hookType, hookILType, method);
 +
 +                    var stateMachineTarget = GetStateMachineTarget(method);
@@ -98,7 +98,7 @@ index 925117d..525d00d 100644
  
              foreach (var nested in type.NestedTypes)
              {
-@@ -203,65 +258,85 @@ namespace MonoMod.RuntimeDetour.HookGen
+@@ -203,65 +258,86 @@ namespace MonoMod.RuntimeDetour.HookGen
          }
  
          public bool GenerateFor(TypeDefinition hookType, TypeDefinition hookILType, MethodDefinition method)
@@ -118,7 +118,9 @@ index 925117d..525d00d 100644
              if (method.HasGenericParameters ||
 +                nameMethod.HasGenericParameters ||
                  method.IsAbstract ||
-                 (method.IsSpecialName && !method.IsConstructor))
+-                (method.IsSpecialName && !method.IsConstructor))
++                (method.IsSpecialName && !method.IsConstructor &&
++                    !method.IsGetter && !method.IsSetter))
                  return false;
  
 -            if (!HookOrig && method.Name.StartsWith("orig_", StringComparison.Ordinal))
@@ -219,7 +221,7 @@ index 925117d..525d00d 100644
                      i++
                  )
                      ;
-@@ -270,116 +345,180 @@ namespace MonoMod.RuntimeDetour.HookGen
+@@ -270,116 +346,180 @@ namespace MonoMod.RuntimeDetour.HookGen
  
              // TODO: Fix possible conflict when other members with the same names exist.
  
@@ -495,7 +497,7 @@ index 925117d..525d00d 100644
          }
  
          public TypeDefinition GenerateDelegateFor(MethodDefinition method)
-@@ -554,8 +693,11 @@ namespace MonoMod.RuntimeDetour.HookGen
+@@ -554,8 +694,11 @@ namespace MonoMod.RuntimeDetour.HookGen
              type = typeRef?.SafeResolve();
  
              Try:

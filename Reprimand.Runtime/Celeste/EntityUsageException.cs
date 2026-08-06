@@ -19,9 +19,17 @@ internal readonly struct EntityUsageErrorInfo {
 /// use <see cref="Extensions.EntityExtensions.UsageError(Entity, string)"/>.
 /// </summary>
 /// <remarks>
-/// Rather than being thrown up to the Everest exception handler like a normal exception would, this
-/// exception type and deriving types are caught and turned into an in-game error popup when thrown
-/// out of a custom entity's constructor, <c>Added</c>, or <c>Awake</c> methods.
+/// <para>
+/// While inside <see cref="global::Celeste.Level"/>, rather than being thrown up to the Everest
+/// exception handler like a normal exception would, this exception type is caught and turned into
+/// an in-game error popup when thrown out of a custom entity's constructor, <c>Added</c>, or
+/// <c>Awake</c> methods.
+/// </para>
+/// <para>
+/// If the offending entity is already in a <see cref="global::Celeste.Level"/>, it is removed.
+/// If the exception is thrown out of <c>Awake</c> (as opposed to the constructor or <c>Added</c>),
+/// the entity's <c>Removed</c> method is called; this is subject to change before the first stable release.
+/// </para>
 /// </remarks>
 public /* open */ class EntityUsageException : Exception {
 	/// <summary>

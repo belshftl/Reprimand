@@ -20,9 +20,10 @@ public static class EntityExtensions {
 		/// Intended to be used like, for instance, <c>throw this.UsageError($"invalid prefix {pfx}");</c>.
 		/// </para>
 		/// <para>
-		/// The exception, if thrown from the constructor, <c>Added</c>, or <c>Awake</c> of an entity,
-		/// is caught and turned into an in-game error popup rather than being thrown out like a normal exception.
-		/// See <see cref="EntityUsageException"/> for more info.
+		/// While inside <see cref="global::Celeste.Level"/>, the exception, if thrown from the constructor,
+		/// <c>Added</c>, or <c>Awake</c> of an entity, is caught and turned into an in-game error popup
+		/// rather than being thrown out like a normal exception. See <see cref="EntityUsageException"/> for
+		/// more info.
 		/// </para>
 		/// </remarks>
 		public EntityUsageException UsageError(string message) => new(e, message);
