@@ -36,6 +36,7 @@ internal static class KnownMetadataNames {
 	public const string TrackedAsAttribute = "Monocle.TrackedAsAttribute";
 
 	public const string Tracker = "Monocle.Tracker";
+	public const string TrackerExtensions = "Reprimand.Extensions.TrackerExtensions";
 	public const string TrackerGetEntityMethod = "GetEntity";
 	public const string TrackerGetNearestEntityMethod = "GetNearestEntity";
 	public const string TrackerGetEntitiesMethod = "GetEntities";

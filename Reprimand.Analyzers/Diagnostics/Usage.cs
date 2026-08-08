@@ -111,7 +111,7 @@ internal static class Usage {
 		messageFormat:
 		"Use ILCursor.RequireGoto{Next,Prev} from Reprimand.MonoMod instead of plain Goto{Next,Prev} as they provide much better exceptions/messages on match failure",
 		category: "Usage",
-		defaultSeverity: DiagnosticSeverity.Warning,
+		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
 	);
 
@@ -158,7 +158,7 @@ internal static class Usage {
 	public static readonly DiagnosticDescriptor PotentiallyWrongIlHookTarget = new(
 		id: "RM0215",
 		title: "Potentially wrong IL hook target",
-		messageFormat: "'{0}': '{1}' has an `orig_` counterpart '{2}', did you mean to IL hook that instead?",
+		messageFormat: "'{0}': '{1}' has an `orig_` counterpart '{2}', did you mean to IL hook that instead? If not, suppress this warning with #pragma",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
@@ -180,7 +180,7 @@ internal static class Usage {
 		messageFormat:
 		"Use the tracker methods that end in `Ext` from Reprimand.Extensions (`Tracker.GetEntityExt<T>`, etc.), as the vanilla ones neglect some type safety, are not nullable-aware, and have less clear error reporting",
 		category: "Usage",
-		defaultSeverity: DiagnosticSeverity.Warning,
+		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
 	);
 
@@ -190,7 +190,7 @@ internal static class Usage {
 		messageFormat:
 		"Use Tracker.GetEntitiesExt<T> or Tracker.GetComponentsExt<T> instead of Tracker.EnumerateEntities<T> / Tracker.EnumerateComponents<T>; the overhead is either the same or even lower",
 		category: "Usage",
-		defaultSeverity: DiagnosticSeverity.Warning,
+		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
 	);
 
@@ -200,22 +200,31 @@ internal static class Usage {
 		messageFormat:
 		"Do `Tracker.GetEntitiesExt<T>().Count` or `Tracker.GetComponentsExt<T>().Count` instead of Tracker.CountEntities<T> or Tracker.CountComponents<T>; it's functionally identical, more idiomatic, and has clearer exceptions",
 		category: "Usage",
+		defaultSeverity: DiagnosticSeverity.Info,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor TrackerLookupOfNonTrackedEntityType = new(
+		id: "RM0220",
+		title: "Tracker lookup target type is not tracked",
+		messageFormat: "Tracker lookup target type '{0}' is not a tracked type",
+		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true
 	);
 
 	public static readonly DiagnosticDescriptor NonTrackerLookupOfTrackedEntityType = new(
-		id: "RM0220",
+		id: "RM0221",
 		title: "Use the Tracker for tracked entity types",
 		messageFormat:
-		"'{0}' is tracked; use Tracker.GetEntityExt<T> or Tracker.GetEntitiesExt<T> (both of which are from Reprimand.Extensions) instead of EntityList.Find{{First,All}} as it's much faster",
+		"'{0}' is tracked; use Tracker.{1}<T> instead of EntityList.{2}<T> as it's much faster",
 		category: "Usage",
 		defaultSeverity: DiagnosticSeverity.Info,
 		isEnabledByDefault: true
 	);
 
 	public static readonly DiagnosticDescriptor TrackedAsIsClassOnly = new(
-		id: "RM0221",
+		id: "RM0222",
 		title: "[TrackedAs] can only be applied to classes",
 		messageFormat: "[TrackedAs] is only valid on class declarations; the attribute doesn't have `AttributeTargets.Class` set due to an Everest oversight",
 		category: "Usage",
@@ -224,7 +233,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor InvalidTrackedAsType = new(
-		id: "RM0222",
+		id: "RM0223",
 		title: "Invalid [TrackedAs] type",
 		messageFormat: "[TrackedAs] target type '{0}' must be a non-static reference-type class",
 		category: "Usage",
@@ -233,7 +242,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor UnrelatedTrackedAsType = new(
-		id: "RM0223",
+		id: "RM0224",
 		title: "[TrackedAs] type is unrelated to the attributed class",
 		messageFormat: "Type '{0}' must be the same as, or derive from, [TrackedAs] type '{1}'",
 		category: "Usage",
@@ -242,7 +251,7 @@ internal static class Usage {
 	);
 
 	public static readonly DiagnosticDescriptor DontUseFrozenUpdateTag = new(
-		id: "RM0224",
+		id: "RM0225",
 		title: "Don't use Tags.FrozenUpdate",
 		messageFormat: "Tags.FrozenUpdate probably doesn't do what you think it does; use RmTags.FreezeframeUpdate if you want your entity to update during freezeframes, or the alias RmTags.LevelFrozenUpdate if you genuinely want the vanilla FrozenUpdate (both from Reprimand.Runtime.Celeste)",
 		category: "Usage",

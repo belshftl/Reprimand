@@ -15,13 +15,13 @@ public sealed class TypeNotTrackedException(Type type) : Exception($"type '{type
 
 /// <summary>
 /// Exception thrown when a throwing operation to get a tracked entity of a given type such as
-/// <see cref="TrackerExtensions.GetEntityExt{T}(Tracker)"/> fails to find any entities of said type.
+/// <see cref="TrackerExtensions.GetEntityOrThrowExt{T}(Tracker)"/> fails to find any entities of said type.
 /// </summary>
 public sealed class TrackedEntityNotFoundException(Type entityType) : Exception($"no tracked entities of type '{entityType}' are present in the current scene");
 
 /// <summary>
 /// Exception thrown when a throwing operation to get a tracked component of a given type such as
-/// <see cref="TrackerExtensions.GetComponentExt{T}(Tracker)"/> fails to find any components of said type.
+/// <see cref="TrackerExtensions.GetComponentOrThrowExt{T}(Tracker)"/> fails to find any components of said type.
 /// </summary>
 public sealed class TrackedComponentNotFoundException(Type componentType) : Exception($"no tracked components of type '{componentType}' are present in the current scene");
 
@@ -47,6 +47,33 @@ public static class TrackerExtensions {
 
 	extension(Tracker tr) {
 		/// <summary>
+		/// Gets the first found tracked entity of type <typeparamref name="T"/> known by the tracker,
+		/// or <see langword="null"/> if no tracked entities of that type are present in the scene.
+		/// </summary>
+		/// <exception cref="TypeNotTrackedException">
+		/// Thrown if <typeparamref name="T"/> is not a tracked type.
+		/// </exception>
+		/// <remarks>
+		/// <para>
+		/// If multiple are present, the one that got added to the scene first is returned; this is an
+		/// unreliable metric, so if you expect multiple to be normally present, use
+		/// <see cref="GetEntitiesExt{T}(Tracker)"/> and filter out the desired one manually.
+		/// </para>
+		/// <para>
+		/// Near-identical in behavior to <see cref="Tracker.GetEntity{T}"/>; the primary difference is that
+		/// the original method silently returns <see langword="null"/> if no entity was found or if the
+		/// entity wasn't actually of type <typeparamref name="T"/> (which is very rare, but possible with
+		/// <see cref="TrackedAsAttribute"/> edge cases). This method throws on such a type mismatch; it
+		/// still has the same null-on-not-found behavior, but is nullable-aware unlike the original method.
+		/// </para>
+		/// </remarks>
+		public T? GetEntityExt<T>() where T : Entity {
+			if (!tr.Entities.TryGetValue(typeof(T), out List<Entity>? l))
+				throw new TypeNotTrackedException(typeof(T));
+			return l.Count == 0 ? null : (T)l[0];
+		}
+
+		/// <summary>
 		/// Gets the first found tracked entity of type <typeparamref name="T"/> known by the tracker.
 		/// </summary>
 		/// <exception cref="TypeNotTrackedException">
@@ -68,37 +95,40 @@ public static class TrackerExtensions {
 		/// <see cref="TrackedAsAttribute"/> edge cases). This method throws on both such cases.
 		/// </para>
 		/// </remarks>
-		public T GetEntityExt<T>() where T : Entity {
+		public T GetEntityOrThrowExt<T>() where T : Entity {
 			if (!tr.Entities.TryGetValue(typeof(T), out List<Entity>? l))
 				throw new TypeNotTrackedException(typeof(T));
 			return l.Count == 0 ? throw new TrackedEntityNotFoundException(typeof(T)) : (T)l[0];
 		}
 
 		/// <summary>
-		/// Gets the first found tracked entity of type <typeparamref name="T"/> known by the tracker,
+		/// Gets the closest entity of type <typeparamref name="T"/> to the point <paramref name="nearestTo"/>,
 		/// or <see langword="null"/> if no tracked entities of that type are present in the scene.
 		/// </summary>
+		/// <param name="nearestTo">
+		/// The distance of every candidate entity's <see cref="Entity.Position"/> to this point will be measured,
+		/// and the one with the smallest distance will be returned.
+		/// </param>
 		/// <exception cref="TypeNotTrackedException">
 		/// Thrown if <typeparamref name="T"/> is not a tracked type.
 		/// </exception>
 		/// <remarks>
-		/// <para>
-		/// If multiple are present, the one that got added to the scene first is returned; this is an
-		/// unreliable metric, so if you expect multiple to be normally present, use
-		/// <see cref="GetEntitiesExt{T}(Tracker)"/> and filter out the desired one manually.
-		/// </para>
-		/// <para>
-		/// Near-identical in behavior to <see cref="Tracker.GetEntity{T}"/>; the primary difference is that
-		/// the original method silently returns <see langword="null"/> if no entity was found or if the
-		/// entity wasn't actually of type <typeparamref name="T"/> (which is very rare, but possible with
-		/// <see cref="TrackedAsAttribute"/> edge cases). This method throws on such a type mismatch; it
-		/// still has the same null-on-not-found behavior, but is nullable-aware unlike the original method.
-		/// </para>
+		/// Near-identical in behavior to <see cref="Tracker.GetNearestEntity{T}(Vector2)"/>; the primary
+		/// differences are that of all <c>*Ext</c> tracker methods, those being better internal type safety,
+		/// <see cref="TypeNotTrackedException"/>, and nullable awareness.
 		/// </remarks>
-		public T? GetEntityOrNullExt<T>() where T : Entity {
-			if (!tr.Entities.TryGetValue(typeof(T), out List<Entity>? l))
-				throw new TypeNotTrackedException(typeof(T));
-			return l.Count == 0 ? null : (T)l[0];
+		public T? GetNearestEntityExt<T>(Vector2 nearestTo) where T : Entity {
+			IReadOnlyList<T> ents = tr.GetEntitiesExt<T>();
+			float match = float.PositiveInfinity;
+			T? matched = null;
+			foreach (T ent in ents) {
+				float dsq = Vector2.DistanceSquared(nearestTo, ent.Position);
+				if (dsq < match) {
+					match = dsq;
+					matched = ent;
+				}
+			}
+			return matched;
 		}
 
 		/// <summary>
@@ -119,38 +149,8 @@ public static class TrackerExtensions {
 		/// difference is that the original method silently returns <see langword="null"/> if no entity
 		/// of that type was found, while this method throws.
 		/// </remarks>
-		public T GetNearestEntityExt<T>(Vector2 nearestTo) where T : Entity => tr.GetNearestEntityOrNullExt<T>(nearestTo) ??
+		public T GetNearestEntityOrThrowExt<T>(Vector2 nearestTo) where T : Entity => tr.GetNearestEntityExt<T>(nearestTo) ??
 			throw new TrackedEntityNotFoundException(typeof(T));
-
-		/// <summary>
-		/// Gets the closest entity of type <typeparamref name="T"/> to the point <paramref name="nearestTo"/>,
-		/// or <see langword="null"/> if no tracked entities of that type are present in the scene.
-		/// </summary>
-		/// <param name="nearestTo">
-		/// The distance of every candidate entity's <see cref="Entity.Position"/> to this point will be measured,
-		/// and the one with the smallest distance will be returned.
-		/// </param>
-		/// <exception cref="TypeNotTrackedException">
-		/// Thrown if <typeparamref name="T"/> is not a tracked type.
-		/// </exception>
-		/// <remarks>
-		/// Near-identical in behavior to <see cref="Tracker.GetNearestEntity{T}(Vector2)"/>; the primary
-		/// differences are that of all <c>*Ext</c> tracker methods, those being better internal type safety,
-		/// <see cref="TypeNotTrackedException"/>, and nullable awareness.
-		/// </remarks>
-		public T? GetNearestEntityOrNullExt<T>(Vector2 nearestTo) where T : Entity {
-			IReadOnlyList<T> ents = tr.GetEntitiesExt<T>();
-			float match = float.PositiveInfinity;
-			T? matched = null;
-			foreach (T ent in ents) {
-				float dsq = Vector2.DistanceSquared(nearestTo, ent.Position);
-				if (dsq < match) {
-					match = dsq;
-					matched = ent;
-				}
-			}
-			return matched;
-		}
 
 		/// <summary>
 		/// Gets every tracked entity of type <typeparamref name="T"/> known by the tracker.
@@ -198,6 +198,33 @@ public static class TrackerExtensions {
 		}
 
 		/// <summary>
+		/// Gets the first found tracked component of type <typeparamref name="T"/> known by the tracker,
+		/// or <see langword="null"/> if no tracked components of that type are present in the scene.
+		/// </summary>
+		/// <exception cref="TypeNotTrackedException">
+		/// Thrown if <typeparamref name="T"/> is not a tracked type.
+		/// </exception>
+		/// <remarks>
+		/// <para>
+		/// If multiple are present, the one that got added to the scene first is returned; this is an
+		/// unreliable metric, so if you expect multiple to be normally present, use
+		/// <see cref="GetComponentsExt{T}(Tracker)"/> and filter out the desired one manually.
+		/// </para>
+		/// <para>
+		/// Near-identical in behavior to <see cref="Tracker.GetComponent{T}"/>; the primary difference is that
+		/// the original method silently returns <see langword="null"/> if no component was found or if the
+		/// component wasn't actually of type <typeparamref name="T"/> (which is very rare, but possible with
+		/// <see cref="TrackedAsAttribute"/> edge cases). This method throws on such a type mismatch; it
+		/// still has the same null-on-not-found behavior, but is nullable-aware unlike the original method.
+		/// </para>
+		/// </remarks>
+		public T? GetComponentExt<T>() where T : Component {
+			if (!tr.Components.TryGetValue(typeof(T), out List<Component>? l))
+				throw new TypeNotTrackedException(typeof(T));
+			return l.Count == 0 ? null : (T)l[0];
+		}
+
+		/// <summary>
 		/// Gets the first found tracked component of type <typeparamref name="T"/> known by the tracker.
 		/// </summary>
 		/// <exception cref="TypeNotTrackedException">
@@ -219,37 +246,42 @@ public static class TrackerExtensions {
 		/// <see cref="TrackedAsAttribute"/> edge cases). This method throws on both such cases.
 		/// </para>
 		/// </remarks>
-		public T GetComponentExt<T>() where T : Component {
+		public T GetComponentOrThrowExt<T>() where T : Component {
 			if (!tr.Components.TryGetValue(typeof(T), out List<Component>? l))
 				throw new TypeNotTrackedException(typeof(T));
 			return l.Count == 0 ? throw new TrackedComponentNotFoundException(typeof(T)) : (T)l[0];
 		}
 
 		/// <summary>
-		/// Gets the first found tracked component of type <typeparamref name="T"/> known by the tracker,
-		/// or <see langword="null"/> if no tracked components of that type are present in the scene.
+		/// Gets the component of type <typeparamref name="T"/> whose parent entity's distance to the point
+		/// <paramref name="nearestTo"/> is shorter than that of any other parent entities of other tracked
+		/// components of type <typeparamref name="T"/>, or <see langword="null"/> if no tracked components of
+		/// that type are present in the scene.
 		/// </summary>
+		/// <param name="nearestTo">
+		/// The distance of every candidate component's parent entity <see cref="Entity.Position"/> to this
+		/// point will be measured, and the one with the smallest distance will be returned.
+		/// </param>
 		/// <exception cref="TypeNotTrackedException">
 		/// Thrown if <typeparamref name="T"/> is not a tracked type.
 		/// </exception>
 		/// <remarks>
-		/// <para>
-		/// If multiple are present, the one that got added to the scene first is returned; this is an
-		/// unreliable metric, so if you expect multiple to be normally present, use
-		/// <see cref="GetComponentsExt{T}(Tracker)"/> and filter out the desired one manually.
-		/// </para>
-		/// <para>
-		/// Near-identical in behavior to <see cref="Tracker.GetComponent{T}"/>; the primary difference is that
-		/// the original method silently returns <see langword="null"/> if no component was found or if the
-		/// component wasn't actually of type <typeparamref name="T"/> (which is very rare, but possible with
-		/// <see cref="TrackedAsAttribute"/> edge cases). This method throws on such a type mismatch; it
-		/// still has the same null-on-not-found behavior, but is nullable-aware unlike the original method.
-		/// </para>
+		/// Near-identical in behavior to <see cref="Tracker.GetNearestComponent{T}(Vector2)"/>; the primary
+		/// differences are that of all <c>*Ext</c> tracker methods, those being better internal type safety,
+		/// <see cref="TypeNotTrackedException"/>, and nullable awareness.
 		/// </remarks>
-		public T? GetComponentOrNullExt<T>() where T : Component {
-			if (!tr.Components.TryGetValue(typeof(T), out List<Component>? l))
-				throw new TypeNotTrackedException(typeof(T));
-			return l.Count == 0 ? null : (T)l[0];
+		public T? GetNearestComponentExt<T>(Vector2 nearestTo) where T : Component {
+			IReadOnlyList<T> comps = tr.GetComponentsExt<T>();
+			float match = float.PositiveInfinity;
+			T? matched = null;
+			foreach (T comp in comps) {
+				float dsq = Vector2.DistanceSquared(nearestTo, comp.Entity.Position);
+				if (dsq < match) {
+					match = dsq;
+					matched = comp;
+				}
+			}
+			return matched;
 		}
 
 		/// <summary>
@@ -272,40 +304,8 @@ public static class TrackerExtensions {
 		/// difference is that the original method silently returns <see langword="null"/> if no component
 		/// of that type was found, while this method throws.
 		/// </remarks>
-		public T GetNearestComponentExt<T>(Vector2 nearestTo) where T : Component => tr.GetNearestComponentOrNullExt<T>(nearestTo) ??
+		public T GetNearestComponentOrThrowExt<T>(Vector2 nearestTo) where T : Component => tr.GetNearestComponentExt<T>(nearestTo) ??
 			throw new TrackedComponentNotFoundException(typeof(T));
-
-		/// <summary>
-		/// Gets the component of type <typeparamref name="T"/> whose parent entity's distance to the point
-		/// <paramref name="nearestTo"/> is shorter than that of any other parent entities of other tracked
-		/// components of type <typeparamref name="T"/>, or <see langword="null"/> if no tracked components of
-		/// that type are present in the scene.
-		/// </summary>
-		/// <param name="nearestTo">
-		/// The distance of every candidate component's parent entity <see cref="Entity.Position"/> to this
-		/// point will be measured, and the one with the smallest distance will be returned.
-		/// </param>
-		/// <exception cref="TypeNotTrackedException">
-		/// Thrown if <typeparamref name="T"/> is not a tracked type.
-		/// </exception>
-		/// <remarks>
-		/// Near-identical in behavior to <see cref="Tracker.GetNearestComponent{T}(Vector2)"/>; the primary
-		/// differences are that of all <c>*Ext</c> tracker methods, those being better internal type safety,
-		/// <see cref="TypeNotTrackedException"/>, and nullable awareness.
-		/// </remarks>
-		public T? GetNearestComponentOrNullExt<T>(Vector2 nearestTo) where T : Component {
-			IReadOnlyList<T> comps = tr.GetComponentsExt<T>();
-			float match = float.PositiveInfinity;
-			T? matched = null;
-			foreach (T comp in comps) {
-				float dsq = Vector2.DistanceSquared(nearestTo, comp.Entity.Position);
-				if (dsq < match) {
-					match = dsq;
-					matched = comp;
-				}
-			}
-			return matched;
-		}
 
 		/// <summary>
 		/// Gets every tracked component of type <typeparamref name="T"/> known by the tracker.

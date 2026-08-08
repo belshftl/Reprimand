@@ -42,20 +42,21 @@ public sealed class IlHookAnalyzer : DiagnosticAnalyzer {
 
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
 		var inv = (IInvocationOperation)ctx.Operation;
-		if (known.EmitDelegateMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+		IMethodSymbol method = inv.TargetMethod;
+		if (known.EmitDelegateMethods.Contains(method)) {
 			IArgumentOperation? delegateArg = findDelegateArgument(inv.Arguments);
 			if (delegateArg is not null)
 				maybeReportDelegateArg(ctx, delegateArg);
-		} else if (known.RemoveInstructionMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+		} else if (known.RemoveInstructionMethods.Contains(method)) {
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
-		} else if (known.GotoMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+		} else if (known.GotoMethods.Contains(method)) {
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.PreferRequireGoto, inv.Syntax.GetLocation()));
 		} else {
 			ITypeSymbol? receiverType = inv.Instance?.Type;
 			if (receiverType is null || !isInstructionListLike(receiverType, known))
 				return;
 			// TODO move out these constants
-			if (inv.TargetMethod.Name is "Add" or "AddRange" or "Clear" or "Insert" or "InsertRange" or "Remove" or "RemoveAt" or "RemoveRange")
+			if (method.Name is "Add" or "AddRange" or "Clear" or "Insert" or "InsertRange" or "Remove" or "RemoveAt" or "RemoveRange")
 				ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DestructiveILEdit, inv.Syntax.GetLocation()));
 		}
 	}

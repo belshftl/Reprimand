@@ -43,6 +43,8 @@ internal sealed class KnownSymbols {
 	public INamedTypeSymbol? TrackedAsAttribute { get; }
 
 	public INamedTypeSymbol? Tracker { get; }
+	public INamedTypeSymbol? TrackerExtensions { get; }
+	public ImmutableHashSet<IMethodSymbol> TrackerOnlyLookupMethods { get; }
 	public ImmutableHashSet<IMethodSymbol> TrackerExtReplacedMethods { get; }
 	public ImmutableHashSet<IMethodSymbol> TrackerEnumerateMethods { get; }
 	public ImmutableHashSet<IMethodSymbol> TrackerCountMethods { get; }
@@ -95,58 +97,59 @@ internal sealed class KnownSymbols {
 		Instruction = comp.GetTypeByMetadataName(KnownMetadataNames.Instruction);
 
 		EmitDelegateMethods = ILCursor
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m => m.Name == "EmitDelegate")
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		RemoveInstructionMethods = ILCursor
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m => m.Name is "Remove" or "RemoveRange")
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		GotoMethods = ILCursor
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m => m.Name is "GotoNext" or "GotoPrev")
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		InstructionMembers = Instruction
 			?.GetMembers()
 			.Where(static m => m.Name is "OpCode" or "Operand")
 			.Select(static m => m.OriginalDefinition)
 			.ToImmutableHashSet(SymbolEqualityComparer.Default) ?? ImmutableHashSet<ISymbol>.Empty;
 
-		DetourContextParamlessUseMethod = DetourContext
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+		DetourContextParamlessUseMethod = MethodDefinitionComparer.Canonicalize(
+			DetourContext
+			?.GetAllMethods()
 			.FirstOrDefault(static m => m.Name == KnownMetadataNames.DetourConfigContextUseMethod && m.Parameters.Length == 0)
-			?.OriginalDefinition;
+		);
 
 		Entity = comp.GetTypeByMetadataName(KnownMetadataNames.Entity);
 		Component = comp.GetTypeByMetadataName(KnownMetadataNames.Component);
 		SceneAsMethods = Entity
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m => m.Name == KnownMetadataNames.SceneAsMethod)
-			.Select(static m => m.OriginalDefinition)
 			.Concat(
 				Component
-					?.GetMembers()
-					.OfType<IMethodSymbol>()
+					?.GetAllMethods()
 					.Where(static m => m.Name == KnownMetadataNames.SceneAsMethod)
-					.Select(static m => m.OriginalDefinition) ?? ImmutableArray<IMethodSymbol>.Empty
+					?? ImmutableArray<IMethodSymbol>.Empty
 			)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 
 		TrackedAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.TrackedAttribute);
 		TrackedAsAttribute = comp.GetTypeByMetadataName(KnownMetadataNames.TrackedAsAttribute);
 
 		Tracker = comp.GetTypeByMetadataName(KnownMetadataNames.Tracker);
+		TrackerExtensions = comp.GetTypeByMetadataName(KnownMetadataNames.TrackerExtensions);
+		TrackerOnlyLookupMethods = Tracker
+			?.GetAllMethods()
+			.Where(static m => m.Arity == 1 && !m.Name.Contains("TrackIfNeeded", StringComparison.Ordinal))
+			.Concat(
+				TrackerExtensions
+					?.GetAllMethods()
+					.Where(static m => m.Arity == 1 && !m.Name.Contains("TrackIfNeeded", StringComparison.Ordinal))
+					?? ImmutableArray<IMethodSymbol>.Empty
+			)
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		TrackerExtReplacedMethods = Tracker
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m =>
 				m.Name == KnownMetadataNames.TrackerGetEntityMethod ||
 				m.Name == KnownMetadataNames.TrackerGetNearestEntityMethod ||
@@ -157,37 +160,30 @@ internal sealed class KnownSymbols {
 				m.Name == KnownMetadataNames.TrackerGetComponentsMethod ||
 				m.Name == KnownMetadataNames.TrackerGetComponentsCopyMethod
 			)
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		TrackerEnumerateMethods = Tracker
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m =>
 				m.Name == KnownMetadataNames.TrackerEnumerateEntitiesMethod ||
 				m.Name == KnownMetadataNames.TrackerEnumerateComponentsMethod
 			)
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 		TrackerCountMethods = Tracker
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m =>
 				m.Name == KnownMetadataNames.TrackerCountEntitiesMethod ||
 				m.Name == KnownMetadataNames.TrackerCountComponentsMethod
 			)
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 
 		EntityList = comp.GetTypeByMetadataName(KnownMetadataNames.EntityList);
 		EntityListFindMethods = EntityList
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m =>
 				m.Name == KnownMetadataNames.EntityListFindFirstMethod ||
 				m.Name == KnownMetadataNames.EntityListFindAllMethod
 			)
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 
 		Engine = comp.GetTypeByMetadataName(KnownMetadataNames.Engine);
 		EngineEffectiveTimeRateField = Engine
@@ -238,14 +234,12 @@ internal sealed class KnownSymbols {
 
 		VirtualContent = comp.GetTypeByMetadataName(KnownMetadataNames.VirtualContent);
 		NonStaticInitedVirtualContentMethods = VirtualContent
-			?.GetMembers()
-			.OfType<IMethodSymbol>()
+			?.GetAllMethods()
 			.Where(static m =>
 				m.Name == KnownMetadataNames.VirtualContentCreateTextureMethod ||
 				m.Name == KnownMetadataNames.VirtualContentCreateRenderTargetMethod
 			)
-			.Select(static m => m.OriginalDefinition)
-			.ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default) ?? ImmutableHashSet<IMethodSymbol>.Empty;
+			.ToImmutableHashSet(MethodDefinitionComparer.Instance) ?? ImmutableHashSet<IMethodSymbol>.Empty;
 
 		VirtualRenderTarget = comp.GetTypeByMetadataName(KnownMetadataNames.VirtualRenderTarget);
 		VirtualTexture = comp.GetTypeByMetadataName(KnownMetadataNames.VirtualTexture);

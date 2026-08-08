@@ -12,7 +12,7 @@ under a combined project name.
 ---
 
 ## Current library features
-- a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 43 unique diagnostics and counting
+- a more comprehensive roslyn analyzer catching many mistakes or bad patterns, currently already at 44 unique diagnostics and counting
 - a way to report entity/trigger usage errors without a crash from a thrown exception by displaying an in-game error popup for the mapper
 - `Draw.SpriteBatch` tracker, and API for scope-based nestable spritebatches and batch suspension/resume
 - more HookGen-like events for `orig_` methods, state machine targets, and some hand-picked lambdas; instead of having to manually find the state machine target and create a hook object, you can simply do `RM.IL.Celeste.Player.DashCoroutine_StateMachine += il_Player_DashCoroutine;`

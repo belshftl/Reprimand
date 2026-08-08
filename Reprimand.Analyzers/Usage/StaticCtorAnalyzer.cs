@@ -96,7 +96,7 @@ public sealed class StaticCtorAnalyzer : DiagnosticAnalyzer {
 			!method.IsStatic ||
 			!(
 				method.OriginalDefinition.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.DontUseInStaticCtorAttribute)) ||
-				known.NonStaticInitedVirtualContentMethods.Contains(method.OriginalDefinition)
+				known.NonStaticInitedVirtualContentMethods.Contains(method)
 			)
 		)
 			return;

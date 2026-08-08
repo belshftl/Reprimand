@@ -26,7 +26,7 @@ public sealed class SceneAsAnalyzer : DiagnosticAnalyzer {
 
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
 		var inv = (IInvocationOperation)ctx.Operation;
-		if (known.SceneAsMethods.Contains(inv.TargetMethod.OriginalDefinition))
+		if (known.SceneAsMethods.Contains(inv.TargetMethod))
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseSceneAsMethod, inv.Syntax.GetLocation()));
 	}
 }

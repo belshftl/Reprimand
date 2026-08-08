@@ -139,7 +139,7 @@ public sealed class GameDependent<T> : IUntypedGameDependentT where T : class {
 	/// <summary>
 	/// Whether this <see cref="GameDependent{T}"/> instance currently holds a value.
 	/// </summary>
-	public bool HoldsValue => Volatile.Read(ref val) is not null;
+	public bool HasValue => Volatile.Read(ref val) is not null;
 
 	/// <summary>
 	/// The currently held value.

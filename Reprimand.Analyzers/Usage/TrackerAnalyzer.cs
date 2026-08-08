@@ -14,6 +14,7 @@ public sealed class TrackerAnalyzer : DiagnosticAnalyzer {
 		Diagnostics.Usage.UseExtTrackerMethods,
 		Diagnostics.Usage.DontUseTrackerEnumerateMethods,
 		Diagnostics.Usage.DontUseTrackerCountMethods,
+		Diagnostics.Usage.TrackerLookupOfNonTrackedEntityType,
 		Diagnostics.Usage.NonTrackerLookupOfTrackedEntityType
 	);
 
@@ -30,16 +31,33 @@ public sealed class TrackerAnalyzer : DiagnosticAnalyzer {
 	private static void analyzeInvocation(OperationAnalysisContext ctx, KnownSymbols known) {
 		var inv = (IInvocationOperation)ctx.Operation;
 		Location loc = inv.Syntax.GetLocation();
-		if (known.TrackerExtReplacedMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+		IMethodSymbol method = inv.TargetMethod;
+		if (known.TrackerOnlyLookupMethods.Contains(method)) {
+			if (!method.IsGenericMethod || method.TypeArguments.Length != 1)
+				goto next;
+			ITypeSymbol typeParam = method.TypeArguments[0];
+			if (!typeParam.IsReferenceType)
+				goto next;
+			if (!typeParam.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.TrackedAttribute)))
+				ctx.ReportDiagnostic(
+					Diagnostic.Create(
+						Diagnostics.Usage.TrackerLookupOfNonTrackedEntityType,
+						loc,
+						typeParam.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+					)
+				);
+		}
+	next:
+		if (known.TrackerExtReplacedMethods.Contains(method)) {
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.UseExtTrackerMethods, loc));
-		} else if (known.TrackerEnumerateMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+		} else if (known.TrackerEnumerateMethods.Contains(method)) {
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerEnumerateMethods, loc));
-		} else if (known.TrackerCountMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
+		} else if (known.TrackerCountMethods.Contains(method)) {
 			ctx.ReportDiagnostic(Diagnostic.Create(Diagnostics.Usage.DontUseTrackerCountMethods, loc));
-		} else if (known.EntityListFindMethods.Contains(inv.TargetMethod.OriginalDefinition)) {
-			if (!inv.TargetMethod.IsGenericMethod || inv.TargetMethod.OriginalDefinition.TypeArguments.Length != 1)
+		} else if (known.EntityListFindMethods.Contains(method)) {
+			if (!method.IsGenericMethod || method.TypeArguments.Length != 1)
 				return;
-			ITypeSymbol typeParam = inv.TargetMethod.TypeArguments[0];
+			ITypeSymbol typeParam = method.TypeArguments[0];
 			if (!typeParam.IsReferenceType)
 				return;
 			if (typeParam.GetAttributes().Any(a => a.AttributeClass.IsOrDerivesFrom(known.TrackedAttribute)))
@@ -47,7 +65,9 @@ public sealed class TrackerAnalyzer : DiagnosticAnalyzer {
 					Diagnostic.Create(
 						Diagnostics.Usage.NonTrackerLookupOfTrackedEntityType,
 						loc,
-						typeParam.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+						typeParam.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat),
+						method.Name == "FindFirst" ? "GetEntityExt" : "GetEntitiesExt",
+						method.Name
 					)
 				);
 		}
